@@ -1,13 +1,20 @@
 import streamlit as st
 import google.generativeai as genai
 
-# --- 1. НАСТРОЙКИ СТРАНИЦЫ ---
-st.set_page_config(page_title="Clause AI", page_icon="⚖️", layout="centered")
+# --- 1. НАСТРОЙКИ СТРАНИЦЫ (WIDE MODE) ---
+st.set_page_config(
+    page_title="Clause AI",
+    page_icon="⚖️",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
-# --- 2. ДИЗАЙН ИНТЕРФЕЙСА ---
-st.title("⚖️ Clause AI")
-st.caption("🚀 Legal Self-Help MVP | Master Thesis Defense")
-st.markdown("---")
+# --- 2. CSS-СТИЛИЗАЦИЯ ---
+st.markdown("""
+<style>
+    .main-header {font-size: 2.5rem; color: #4B9CD3;}
+</style>
+""", unsafe_allow_html=True)
 
 # --- 3. ПОДКЛЮЧЕНИЕ КЛЮЧА ---
 if "GOOGLE_API_KEY" in st.secrets:
@@ -15,7 +22,7 @@ if "GOOGLE_API_KEY" in st.secrets:
 else:
     st.error("⚠️ API Key is missing. Please set it in Streamlit Secrets.")
 
-# --- 4. ЮРИДИЧЕСКАЯ БАЗА И ИНСТРУКЦИИ (ПОЛНАЯ ВЕРСИЯ) ---
+# --- 4. ЮРИДИЧЕСКАЯ БАЗА (ПОЛНАЯ ВЕРСИЯ) ---
 LEGAL_CONTEXT = """
 SYSTEM ROLE:
 You are Clause AI, a specialized legal assistant for Germany (MVP).
@@ -67,6 +74,7 @@ TEXT:
 (1) Die Kündigung ist spätestens am dritten Werktag eines Kalendermonats zum Ablauf des übernächsten Monats zulässig. Die Kündigungsfrist für den Vermieter verlängert sich nach fünf und acht Jahren seit der Überlassung des Wohnraums um jeweils drei Monate.
 (4) Eine zum Nachteil des Mieters von Absatz 1 oder 3 abweichende Vereinbarung ist unwirksam.
 
+
 === CATEGORY: CONTRACTS & CONSUMER LAW (VERTRAGSRECHT) ===
 Use these laws for cancelling subscriptions (gym, internet, phone) and checking contract "Red Flags".
 
@@ -88,6 +96,7 @@ Auch soweit eine Abweichung von den gesetzlichen Vorschriften zulässig ist, ist
 7. (Haftungsausschluss) ein Ausschluss oder eine Begrenzung der Haftung für Schäden aus der Verletzung des Lebens, des Körpers oder der Gesundheit...
 9. (Laufzeit) eine den anderen Vertragsteil länger als zwei Jahre bindende Laufzeit des Vertrags... oder eine stillschweigende Verlängerung... es sei denn das Vertragsverhältnis wird nur auf unbestimmte Zeit verlängert und ist monatlich kündbar.
 
+
 === CATEGORY: FREELANCE & SERVICE LAW (DIENSTVERTRAG) ===
 Use these laws for freelancer invoices, late payments, and service agreements.
 
@@ -106,6 +115,7 @@ TEXT:
 (2) Bei Rechtsgeschäften, an denen ein Verbraucher nicht beteiligt ist (B2B), beträgt der Zinssatz für Entgeltforderungen neun Prozentpunkte über dem Basiszinssatz.
 (5) Der Gläubiger einer Entgeltforderung hat bei Verzug des Schuldners (B2B) außerdem einen Anspruch auf Zahlung einer Pauschale in Höhe von 40 Euro.
 
+
 === CATEGORY: COMPLIANCE & LIMITATIONS ===
 Use this to define the bot's boundaries.
 
@@ -116,35 +126,76 @@ TEXT:
 """
 
 # --- 5. ЗАПУСК МОДЕЛИ ---
-# Используем проверенную модель (Flash Latest)
 try:
     model = genai.GenerativeModel('gemini-flash-latest', system_instruction=LEGAL_CONTEXT)
 except:
     st.error("Model connection error. Please reload.")
 
-# --- 6. ЧАТ ИСТОРИЯ ---
+# --- 6. САЙДБАР (ЛЕВАЯ ПАНЕЛЬ) ---
+with st.sidebar:
+    st.header("⚖️ Clause AI")
+    st.success("🟢 System Online")
+    st.markdown("---")
+    st.markdown("**Master Thesis Defense**")
+    st.caption("Developed by [Your Name]")
+    
+    st.markdown("---")
+    st.subheader("🛠 Capabilities")
+    st.markdown("- 🇩🇪 **BGB Analysis**")
+    st.markdown("- 📝 **Document Drafting**")
+    st.markdown("- 🇬🇧 **Translation**")
+    
+    with st.expander("📚 Supported Laws (BGB)"):
+        st.caption("Tenancy Law (§535-573c)")
+        st.caption("Contracts (§309, §314, §355)")
+        st.caption("Freelance (§286, §288, §611)")
+
+# --- 7. ГЛАВНЫЙ ЭКРАН ---
+st.title("Clause AI: Legal Self-Help Assistant")
+st.markdown("##### 🚀 AI-Powered Legal Guidance for Germany")
+
+# Карточки возможностей
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    with st.container(border=True):
+        st.markdown("### 🏠 Tenancy")
+        st.caption("Deposit issues, Rent reduction, Repairs.")
+
+with col2:
+    with st.container(border=True):
+        st.markdown("### 📄 Contracts")
+        st.caption("Gym cancellation, Phone contracts, 'Red Flags'.")
+
+with col3:
+    with st.container(border=True):
+        st.markdown("### 💼 Freelance")
+        st.caption("Unpaid invoices, Late fees, B2B rights.")
+
+st.markdown("---")
+
+# --- 8. ЧАТ ---
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "content": "Hello! I am Clause AI.\nI can help with German Tenancy Law, Contracts, and Freelance issues.\n\nDescribe your situation (English or German)."}
+        {"role": "assistant", "content": "Hello! I am ready to help. Select a topic above or describe your issue below.\n\n*Example: 'My landlord kept my deposit.'*"}
     ]
 
 for msg in st.session_state.messages:
     st.chat_message(msg["role"]).write(msg["content"])
 
-# --- 7. ОБРАБОТКА ЗАПРОСА ---
-if prompt := st.chat_input("Ex: Landlord kept my deposit..."):
+# --- 9. ВВОД СООБЩЕНИЯ ---
+if prompt := st.chat_input("Describe your legal issue (English or German)..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     st.chat_message("user").write(prompt)
 
     try:
-        # Формируем историю
         chat_history = []
         for m in st.session_state.messages[:-1]:
             chat_history.append({"role": "user" if m["role"] == "user" else "model", "parts": [m["content"]]})
 
         chat = model.start_chat(history=chat_history)
         
-        with st.spinner("Analyzing Laws & Drafting German Documents..."):
+        with st.spinner("⚖️ Analyzing BGB & Drafting response..."):
             response = chat.send_message(prompt)
             
         st.session_state.messages.append({"role": "assistant", "content": response.text})
