@@ -24,7 +24,7 @@ st.markdown("""
         border: 1px solid #4B9CD3;
     }
     
-    /* Убираем лишние отступы сверху */
+    /* Убираем лишние отступы */
     .block-container {
         padding-top: 2rem;
     }
@@ -303,6 +303,7 @@ if process_button and uploaded_file:
 
 # --- 10. ОБЫЧНЫЙ ЧАТ ---
 if prompt := st.chat_input("Describe your legal issue..."):
+    # 1. Показываем вопрос пользователя
     st.session_state.messages.append({"role": "user", "content": prompt})
     st.chat_message("user").write(prompt)
 
@@ -313,15 +314,28 @@ if prompt := st.chat_input("Describe your legal issue..."):
 
         chat = model.start_chat(history=chat_history)
         
-        with st.spinner("Analyzing Laws & Drafting..."):
+        # === АНИМАЦИЯ МЫШЛЕНИЯ ===
+        # Блок статуса появляется ПОСЛЕ вопроса, перед ответом
+        with st.status("🧠 Processing Legal Query...", expanded=True) as status:
+            st.write("🔍 Analyzing input...")
+            time.sleep(0.7)
+            st.write("📚 Searching BGB & Case Law...")
+            time.sleep(0.7)
+            st.write("⚖️ Checking for Red Flags...")
+            time.sleep(0.7)
+            st.write("✍️ Drafting response...")
+            time.sleep(0.5)
+            
+            # Запрос к AI идет в фоне, пока крутится анимация
             response = chat.send_message(prompt)
+            
+            status.update(label="✅ Response Ready", state="complete", expanded=False)
+        # ===========================
         
         st.session_state.messages.append({"role": "assistant", "content": response.text})
         st.chat_message("assistant").write(response.text)
         
-        # === ИСПРАВЛЕНО: КНОПКИ ВПЛОТНУЮ ===
-        
-        # 1. Скачивание
+        # Кнопки (скачивание и оценка)
         download_text = f"""
 {response.text}
 
@@ -340,9 +354,7 @@ When dealing with a legal issue consult a licensed attorney before you take acti
             mime="text/plain"
         )
         
-        # 2. Кнопки (Пропорция 1:1:12 - две узкие кнопки слева)
         col1, col2, col3 = st.columns([1, 1, 12]) 
-        
         with col1:
             st.button("👍")
         with col2:
