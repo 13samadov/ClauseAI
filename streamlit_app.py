@@ -27,6 +27,12 @@ st.markdown("""
         padding: 10px;
         font-size: 0.8rem;
         border-top: 1px solid #262730;
+        z-index: 100;
+    }
+    /* Стилизация кнопок */
+    .stButton button {
+        border-radius: 8px;
+        width: 100%;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -65,7 +71,10 @@ INSTRUCTIONS (STRICT):
    - If the user uploads a contract, scan it for "Red Flags" using § 309 BGB.
    - Summarize risks in English.
 
-4. DISCLAIMER:
+4. DEADLINES & DATES:
+   - Whenever relevant (cancellation, deposit), explicitly calculate and Mention Deadlines (Fristen) based on German Law.
+
+5. DISCLAIMER:
    - Always cite the Paragraph (§). End with: "Not legal advice. AI MVP Demo."
 
 *** KNOWLEDGE BASE FOR CLAUSE AI ***
@@ -156,9 +165,9 @@ try:
 except:
     st.error("Model connection error. Please reload.")
 
-# --- 6. САЙДБАР (HTML ИНЪЕКЦИЯ ДЛЯ ЛОГО) ---
+# --- 6. САЙДБАР (С НОВЫМИ ФИШКАМИ) ---
 with st.sidebar:
-    # 1. ЛОГОТИП (КРУГЛЫЙ)
+    # ЛОГОТИП
     img_base64 = get_base64_image(LOGO_FILENAME)
     if img_base64:
         st.markdown(
@@ -171,12 +180,11 @@ with st.sidebar:
             unsafe_allow_html=True
         )
     else:
-        st.warning(f"⚠️ Image '{LOGO_FILENAME}' not found. Please upload it to GitHub.")
+        st.warning(f"⚠️ Image '{LOGO_FILENAME}' not found.")
 
     st.header("⚖️ Clause AI")
     st.success("🟢 System Online")
     
-    # 2. КНОПКА "НОВЫЙ ЧАТ"
     if st.button("🔄 Start New Chat", use_container_width=True):
         st.session_state.messages = [
             {"role": "assistant", "content": "Hello! I am Clause AI. I can analyze German contracts (PDF) or draft legal letters.\n\nDescribe your issue below."}
@@ -185,7 +193,19 @@ with st.sidebar:
     
     st.markdown("---")
     
-    # 3. ЗАГРУЗКА PDF
+    # --- НОВОЕ: GDPR / PRIVACY TOGGLE (ИЗ ДИССЕРТАЦИИ) ---
+    st.markdown("**🔐 Data Privacy**")
+    privacy_mode = st.radio(
+        "Select retention mode:",
+        ["Ephemeral (No Logs)", "Persistent (Save History)"],
+        index=0,
+        help="Ephemeral mode complies with GDPR data minimization (Thesis Section 5.2)."
+    )
+    # ----------------------------------------------------
+
+    st.markdown("---")
+    
+    # PDF UPLOADER
     st.subheader("📂 Contract Analyzer")
     uploaded_file = st.file_uploader("Upload Contract (PDF)", type="pdf")
     
@@ -197,19 +217,18 @@ with st.sidebar:
 
     st.markdown("---")
     
-    # 4. БАЗА ЗНАНИЙ
-    with st.expander("📚 Knowledge Base (Loaded)"):
-        st.caption("✅ Tenancy Law (§535-573c)")
-        st.caption("✅ Contracts (§309, §314)")
-        st.caption("✅ Freelance (§286, §288)")
-    
-    st.caption("Master Thesis Defense MVP")
+    # --- ССЫЛКА НА АДВОКАТА (ОБНОВЛЕНО!) ---
+    with st.expander("👨‍⚖️ Find a Lawyer (Partner)"):
+        st.caption("Complex case? Connect with our partner network (Thesis Section 4.14).")
+        # Теперь это настоящая ссылка!
+        st.link_button("Search Lawyer Database", "https://www.bestlawyers.com/germany/munich")
+    # ------------------------------------------
 
-# --- 7. ГЛАВНЫЙ ЭКРАН (КАРТОЧКИ) ---
+# --- 7. ГЛАВНЫЙ ЭКРАН ---
 st.title("Clause AI: Legal Self-Help Assistant")
 st.markdown("##### 🚀 AI-Powered Legal Guidance for Germany")
 
-# Карточки возможностей
+# Карточки возможностей (Финал)
 col1, col2, col3 = st.columns(3)
 
 with col1:
@@ -256,7 +275,6 @@ if "messages" not in st.session_state:
         {"role": "assistant", "content": "Hello! I am Clause AI. I can analyze German contracts (PDF) or draft legal letters.\n\nDescribe your issue below."}
     ]
 
-# Отображение истории чата
 for msg in st.session_state.messages:
     st.chat_message(msg["role"]).write(msg["content"])
 
@@ -264,13 +282,11 @@ for msg in st.session_state.messages:
 if process_button and uploaded_file:
     with st.spinner("Reading PDF and checking against § 309 BGB..."):
         try:
-            # Читаем PDF
             pdf_reader = PyPDF2.PdfReader(uploaded_file)
             pdf_text = ""
             for page in pdf_reader.pages:
                 pdf_text += page.extract_text()
             
-            # Промпт для анализа
             analysis_prompt = (
                 f"ACT AS A LEGAL EXPERT. Analyze this contract text specifically for 'Red Flags' "
                 f"and unfair clauses according to § 309 BGB (Knowledge Base).\n"
@@ -279,11 +295,9 @@ if process_button and uploaded_file:
                 f"CONTRACT TEXT:\n{pdf_text}"
             )
             
-            # Добавляем сообщение пользователя
             st.session_state.messages.append({"role": "user", "content": f"📂 Analyzed contract: {uploaded_file.name}"})
             st.chat_message("user").write(f"📂 Analyzed contract: {uploaded_file.name}")
 
-            # Отправляем в AI
             chat_history = []
             for m in st.session_state.messages[:-1]:
                 chat_history.append({"role": "user" if m["role"] == "user" else "model", "parts": [m["content"]]})
@@ -291,7 +305,6 @@ if process_button and uploaded_file:
             chat = model.start_chat(history=chat_history)
             response = chat.send_message(analysis_prompt)
             
-            # Показываем ответ
             st.session_state.messages.append({"role": "assistant", "content": response.text})
             st.chat_message("assistant").write(response.text)
             
@@ -304,7 +317,6 @@ if prompt := st.chat_input("Describe your legal issue..."):
     st.chat_message("user").write(prompt)
 
     try:
-        # Формируем историю
         chat_history = []
         for m in st.session_state.messages[:-1]:
             chat_history.append({"role": "user" if m["role"] == "user" else "model", "parts": [m["content"]]})
@@ -314,27 +326,24 @@ if prompt := st.chat_input("Describe your legal issue..."):
         with st.spinner("Analyzing Laws & Drafting..."):
             response = chat.send_message(prompt)
         
-        # Показываем ответ
         st.session_state.messages.append({"role": "assistant", "content": response.text})
         st.chat_message("assistant").write(response.text)
         
-        # === КНОПКА СКАЧИВАНИЯ (НОВАЯ ФИШКА!) ===
         st.download_button(
             label="📥 Download Answer as Text",
             data=response.text,
             file_name="clause_ai_response.txt",
             mime="text/plain"
         )
-        # ========================================
         
     except Exception as e:
         st.error(f"Error: {e}")
 
-# --- 11. ФУТЕР (НОВАЯ ФИШКА!) ---
+# --- 11. ФУТЕР ---
 st.markdown(
     """
     <div class="footer">
-        <p>🎓 Master Thesis Project | 🛡️ Not Legal Advice | 🤖 Powered by Gemini 1.5</p>
+        <p>🎓 Master Thesis Project | 🛡️ Not Legal Advice | 🤖 Powered by Gemini 1.5 | 🇪🇺 Hosted in EU (GDPR)</p>
     </div>
     """,
     unsafe_allow_html=True
