@@ -40,7 +40,7 @@ if "GOOGLE_API_KEY" in st.secrets:
 else:
     st.error("⚠️ API Key is missing. Please set it in Streamlit Secrets.")
 
-# --- 4. БАЗА ЗНАНИЙ (ПОЛНАЯ ВЕРСИЯ) ---
+# --- 4. БАЗА ЗНАНИЙ ---
 LEGAL_CONTEXT = """
 SYSTEM ROLE:
 You are Clause AI, a specialized legal assistant for Germany (MVP).
@@ -70,80 +70,38 @@ INSTRUCTIONS (STRICT):
 === CATEGORY: TENANCY LAW (MIETRECHT) ===
 Use these laws for questions regarding apartments, deposits (Kaution), and rent reduction.
 
-LAW: § 551 BGB - Begrenzung und Anlage von Mietsicherheiten (Security Deposit Limits)
-TEXT:
-(1) Hat der Mieter dem Vermieter für die Erfüllung seiner Pflichten Sicherheit zu leisten, so darf diese vorbehaltlich des Absatzes 3 Satz 4 höchstens das Dreifache der auf einen Monat entfallenden Miete ohne die als Pauschale oder als Vorauszahlung ausgewiesenen Betriebskosten betragen.
-(2) Ist als Sicherheit eine Geldsumme bereitzustellen, so ist der Mieter zu drei gleichen monatlichen Teilzahlungen berechtigt. Die erste Teilzahlung ist zu Beginn des Mietverhältnisses fällig. Die weiteren Teilzahlungen werden zusammen mit den unmittelbar folgenden Mietzahlungen fällig.
-(3) Der Vermieter hat eine ihm als Sicherheit überlassene Geldsumme bei einem Kreditinstitut zu dem für Spareinlagen mit dreimonatiger Kündigungsfrist üblichen Zinssatz anzulegen. Die Vertragsparteien können eine andere Anlageform vereinbaren. In beiden Fällen muss die Anlage vom Vermögen des Vermieters getrennt erfolgen und stehen die Erträge dem Mieter zu. Sie erhöhen die Sicherheit. Bei Wohnraum in einem Studenten- oder Jugendwohnheim besteht für den Vermieter keine Pflicht, die Sicherheitsleistung zu verzinsen.
-(4) Eine zum Nachteil des Mieters abweichende Vereinbarung ist unwirksam.
+LAW: § 551 BGB - Begrenzung und Anlage von Mietsicherheiten
+TEXT: (1) Hat der Mieter dem Vermieter für die Erfüllung seiner Pflichten Sicherheit zu leisten, so darf diese vorbehaltlich des Absatzes 3 Satz 4 höchstens das Dreifache der auf einen Monat entfallenden Miete ohne die als Pauschale oder als Vorauszahlung ausgewiesenen Betriebskosten betragen.
 
-LAW: § 548 BGB - Verjährung der Ersatzansprüche (Statute of Limitations - 6 Months)
-TEXT:
-(1) Die Ersatzansprüche des Vermieters wegen Veränderungen oder Verschlechterungen der Mietsache verjähren in sechs Monaten. Die Verjährung beginnt mit dem Zeitpunkt, in dem er die Mietsache zurückerhält. Mit der Verjährung des Anspruchs des Vermieters auf Rückgabe der Mietsache verjähren auch seine Ersatzansprüche.
-(2) Ansprüche des Mieters auf Ersatz von Aufwendungen oder auf Gestattung der Wegnahme einer Einrichtung verjähren in sechs Monaten nach der Beendigung des Mietverhältnisses.
+LAW: § 548 BGB - Verjährung der Ersatzansprüche
+TEXT: (1) Die Ersatzansprüche des Vermieters wegen Veränderungen oder Verschlechterungen der Mietsache verjähren in sechs Monaten.
 
-LAW: § 535 BGB - Inhalt und Hauptpflichten des Mietvertrags (Landlord Duties)
-TEXT:
-(1) Durch den Mietvertrag wird der Vermieter verpflichtet, dem Mieter den Gebrauch der Mietsache während der Mietzeit zu gewähren. Der Vermieter hat die Mietsache dem Mieter in einem zum vertragsgemäßen Gebrauch geeigneten Zustand zu überlassen und sie während der Mietzeit in diesem Zustand zu erhalten. Er hat die auf der Mietsache ruhenden Lasten zu tragen.
-(2) Der Mieter ist verpflichtet, dem Vermieter die vereinbarte Miete zu entrichten.
+LAW: § 535 BGB - Inhalt und Hauptpflichten des Mietvertrags
+TEXT: (1) Durch den Mietvertrag wird der Vermieter verpflichtet, dem Mieter den Gebrauch der Mietsache während der Mietzeit zu gewähren.
 
-LAW: § 536 BGB - Mietminderung bei Sach- und Rechtsmängeln (Rent Reduction)
-TEXT:
-(1) Hat die Mietsache zur Zeit der Überlassung an den Mieter einen Mangel, der ihre Tauglichkeit zum vertragsgemäßen Gebrauch aufhebt, oder entsteht während der Mietzeit ein solcher Mangel, so ist der Mieter für die Zeit, in der die Tauglichkeit aufgehoben ist, von der Entrichtung der Miete befreit. Für die Zeit, während der die Tauglichkeit gemindert ist, hat er nur eine angemessen herabgesetzte Miete zu entrichten. Eine unerhebliche Minderung der Tauglichkeit bleibt außer Betracht.
-(2) Absatz 1 Satz 1 und 2 gilt auch, wenn eine zugesicherte Eigenschaft fehlt oder später wegfällt.
-(4) Bei einem Mietverhältnis über Wohnraum ist eine zum Nachteil des Mieters abweichende Vereinbarung unwirksam.
-
-LAW: § 573c BGB - Fristen der ordentlichen Kündigung (Termination Deadlines)
-TEXT:
-(1) Die Kündigung ist spätestens am dritten Werktag eines Kalendermonats zum Ablauf des übernächsten Monats zulässig. Die Kündigungsfrist für den Vermieter verlängert sich nach fünf und acht Jahren seit der Überlassung des Wohnraums um jeweils drei Monate.
-(4) Eine zum Nachteil des Mieters von Absatz 1 oder 3 abweichende Vereinbarung ist unwirksam.
+LAW: § 536 BGB - Mietminderung bei Sach- und Rechtsmängeln
+TEXT: (1) Hat die Mietsache zur Zeit der Überlassung an den Mieter einen Mangel, der ihre Tauglichkeit zum vertragsgemäßen Gebrauch aufhebt, oder entsteht während der Mietzeit ein solcher Mangel, so ist der Mieter für die Zeit, in der die Tauglichkeit aufgehoben ist, von der Entrichtung der Miete befreit.
 
 === CATEGORY: CONTRACTS & CONSUMER LAW (VERTRAGSRECHT) ===
-Use these laws for cancelling subscriptions (gym, internet, phone) and checking contract "Red Flags".
+LAW: § 314 BGB - Kündigung von Dauerschuldverhältnissen aus wichtigem Grund
+TEXT: (1) Dauerschuldverhältnisse kann jeder Vertragsteil aus wichtigem Grund ohne Einhaltung einer Kündigungsfrist kündigen.
 
-LAW: § 314 BGB - Kündigung von Dauerschuldverhältnissen aus wichtigem Grund (Termination for Good Cause)
-TEXT:
-(1) Dauerschuldverhältnisse kann jeder Vertragsteil aus wichtigem Grund ohne Einhaltung einer Kündigungsfrist kündigen. Ein wichtiger Grund liegt vor, wenn dem kündigenden Teil unter Berücksichtigung aller Umstände des Einzelfalls und unter Abwägung der beiderseitigen Interessen die Fortsetzung des Vertragsverhältnisses bis zur vereinbarten Beendigung oder bis zum Ablauf einer Kündigungsfrist nicht zugemutet werden kann.
-(3) Der Berechtigte kann nur innerhalb einer angemessenen Frist kündigen, nachdem er vom Kündigungsgrund Kenntnis erlangt hat.
+LAW: § 355 BGB - Widerrufsrecht bei Verbraucherverträgen
+TEXT: (1) Wird einem Verbraucher durch Gesetz ein Widerrufsrecht nach dieser Vorschrift eingeräumt, so sind der Verbraucher und der Unternehmer an ihre auf den Abschluss des Vertrags gerichteten Willenserklärungen nicht mehr gebunden, wenn der Verbraucher seine Willenserklärung fristgerecht widerrufen hat.
 
-LAW: § 355 BGB - Widerrufsrecht bei Verbraucherverträgen (Right of Withdrawal - 14 Days)
-TEXT:
-(1) Wird einem Verbraucher durch Gesetz ein Widerrufsrecht nach dieser Vorschrift eingeräumt, so sind der Verbraucher und der Unternehmer an ihre auf den Abschluss des Vertrags gerichteten Willenserklärungen nicht mehr gebunden, wenn der Verbraucher seine Willenserklärung fristgerecht widerrufen hat.
-(2) Die Widerrufsfrist beträgt 14 Tage. Sie beginnt mit Vertragsschluss, soweit nichts anderes bestimmt ist.
-
-LAW: § 309 BGB - Klauselverbote ohne Wertungsmöglichkeit (Contract Red Flags / Prohibited Clauses)
-TEXT:
-Auch soweit eine Abweichung von den gesetzlichen Vorschriften zulässig ist, ist in Allgemeinen Geschäftsbedingungen unwirksam:
-1. (Kurzfristige Preiserhöhungen) eine Bestimmung, welche die Erhöhung des Entgelts für Waren oder Leistungen vorsieht, die innerhalb von vier Monaten nach Vertragsschluss geliefert oder erbracht werden sollen...
-5. (Pauschalierung von Schadensersatzansprüchen) die Vereinbarung eines pauschalierten Anspruchs des Verwenders auf Schadensersatz... wenn die Pauschale den gewöhnlichen Schaden übersteigt.
-7. (Haftungsausschluss) ein Ausschluss oder eine Begrenzung der Haftung für Schäden aus der Verletzung des Lebens, des Körpers oder der Gesundheit...
-9. (Laufzeit) eine den anderen Vertragsteil länger als zwei Jahre bindende Laufzeit des Vertrags... oder eine stillschweigende Verlängerung... es sei denn das Vertragsverhältnis wird nur auf unbestimmte Zeit verlängert und ist monatlich kündbar.
+LAW: § 309 BGB - Klauselverbote ohne Wertungsmöglichkeit
+TEXT: Auch soweit eine Abweichung von den gesetzlichen Vorschriften zulässig ist, ist in Allgemeinen Geschäftsbedingungen unwirksam: (Pauschalierung von Schadensersatzansprüchen, Haftungsausschluss, Laufzeit > 2 Jahre).
 
 === CATEGORY: FREELANCE & SERVICE LAW (DIENSTVERTRAG) ===
-Use these laws for freelancer invoices, late payments, and service agreements.
+LAW: § 286 BGB - Verzug des Schuldners
+TEXT: (3) Der Schuldner einer Entgeltforderung kommt spätestens in Verzug, wenn er nicht innerhalb von 30 Tagen nach Fälligkeit und Zugang einer Rechnung leistet.
 
-LAW: § 611 BGB - Vertragstypische Pflichten beim Dienstvertrag (Service Contract Duties)
-TEXT:
-(1) Durch den Dienstvertrag wird derjenige, welcher Dienste zusagt, zur Leistung der versprochenen Dienste, der andere Teil zur Gewährung der vereinbarten Vergütung verpflichtet.
-
-LAW: § 286 BGB - Verzug des Schuldners (Client Default / Late Payment)
-TEXT:
-(1) Leistet der Schuldner auf eine Mahnung des Gläubigers nicht, die nach dem Eintritt der Fälligkeit erfolgt, so kommt er durch die Mahnung in Verzug.
-(3) Der Schuldner einer Entgeltforderung kommt spätestens in Verzug, wenn er nicht innerhalb von 30 Tagen nach Fälligkeit und Zugang einer Rechnung oder gleichwertigen Zahlungsaufstellung leistet.
-
-LAW: § 288 BGB - Verzugszinsen (Default Interest)
-TEXT:
-(1) Eine Geldschuld ist während des Verzugs zu verzinsen. Der Verzugszinssatz beträgt für das Jahr fünf Prozentpunkte über dem Basiszinssatz.
-(2) Bei Rechtsgeschäften, an denen ein Verbraucher nicht beteiligt ist (B2B), beträgt der Zinssatz für Entgeltforderungen neun Prozentpunkte über dem Basiszinssatz.
-(5) Der Gläubiger einer Entgeltforderung hat bei Verzug des Schuldners (B2B) außerdem einen Anspruch auf Zahlung einer Pauschale in Höhe von 40 Euro.
+LAW: § 288 BGB - Verzugszinsen
+TEXT: (2) Bei Rechtsgeschäften, an denen ein Verbraucher nicht beteiligt ist (B2B), beträgt der Zinssatz für Entgeltforderungen neun Prozentpunkte über dem Basiszinssatz. (5) Pauschale 40 Euro.
 
 === CATEGORY: COMPLIANCE & LIMITATIONS ===
-Use this to define the bot's boundaries.
-
-LAW: § 2 RDG - Begriff der Rechtsdienstleistung (Legal Services Definition)
-TEXT:
-(1) Rechtsdienstleistung ist jede Tätigkeit in konkreten fremden Angelegenheiten, sobald sie eine rechtliche Prüfung des Einzelfalls erfordert.
-(3) Rechtsdienstleistung ist nicht: ... die an die Allgemeinheit gerichtete Darstellung und Erörterung von Rechtsfragen und Rechtsfällen in den Medien.
+LAW: § 2 RDG - Begriff der Rechtsdienstleistung
+TEXT: (1) Rechtsdienstleistung ist jede Tätigkeit in konkreten fremden Angelegenheiten, sobald sie eine rechtliche Prüfung des Einzelfalls erfordert.
 """
 
 # --- 5. ЗАПУСК МОДЕЛИ ---
@@ -152,9 +110,8 @@ try:
 except:
     st.error("Model connection error. Please reload.")
 
-# --- 6. САЙДБАР (ЧИСТЫЙ ДИЗАЙН) ---
+# --- 6. САЙДБАР ---
 with st.sidebar:
-    # 1. ЛОГОТИП
     img_base64 = get_base64_image(LOGO_FILENAME)
     if img_base64:
         st.markdown(
@@ -170,11 +127,8 @@ with st.sidebar:
         st.warning(f"⚠️ Image '{LOGO_FILENAME}' not found.")
 
     st.header("⚖️ Clause AI")
-    # === СЛОГАН (НОВОЕ!) ===
     st.markdown('<p style="font-style: italic; color: #808495; margin-top: -15px;">Rule the Rules</p>', unsafe_allow_html=True)
-    # ========================
     
-    # 2. КНОПКИ
     if st.button("🔄 Start New Chat", use_container_width=True):
         st.session_state.messages = [
             {"role": "assistant", "content": "Hello! I am Clause AI. I can analyze German contracts (PDF) or draft legal letters.\n\nDescribe your issue below."}
@@ -183,18 +137,16 @@ with st.sidebar:
     
     st.markdown("---")
     
-    # 3. GDPR / PRIVACY
     st.markdown("**🔐 Data Privacy**")
     privacy_mode = st.radio(
         "Select retention mode:",
         ["Ephemeral (No Logs)", "Persistent (Save History)"],
         index=0,
-        help="Ephemeral mode complies with GDPR data minimization."
+        help="Ephemeral mode complies with GDPR data minimization (Thesis Section 5.2)."
     )
 
     st.markdown("---")
     
-    # 4. PDF UPLOADER
     st.subheader("📂 Contract Analyzer")
     uploaded_file = st.file_uploader("Upload Contract (PDF)", type="pdf")
     
@@ -206,18 +158,15 @@ with st.sidebar:
 
     st.markdown("---")
     
-    # 5. ССЫЛКА НА АДВОКАТА
     with st.expander("👨‍⚖️ Find a Lawyer (Partner)"):
-        st.caption("Complex case? Connect with our partner network.")
+        st.caption("Complex case? Connect with our partner network (Thesis Section 4.14).")
         st.link_button("Search BestLawyers.com", "https://www.bestlawyers.com/germany/munich")
-    
-    # (НИЖНИЙ ТЕКСТ УДАЛЕН ПО ЗАПРОСУ)
 
 # --- 7. ГЛАВНЫЙ ЭКРАН ---
 st.title("Clause AI: Legal Self-Help Assistant")
 st.markdown("##### 🚀 AI-Powered Legal Guidance for Germany")
 
-# Карточки возможностей
+# Карточки
 col1, col2, col3 = st.columns(3)
 
 with col1:
@@ -318,12 +267,37 @@ if prompt := st.chat_input("Describe your legal issue..."):
         st.session_state.messages.append({"role": "assistant", "content": response.text})
         st.chat_message("assistant").write(response.text)
         
+        # === НОВАЯ ЛОГИКА: WATERMARK + FEEDBACK (ИЗ ТЕЗИСА) ===
+        
+        # 1. Текст для скачивания с водяным знаком (Thesis 4.12.4) и дисклеймером (3.1.3)
+        download_text = f"""
+{response.text}
+
+--------------------------------------------------
+GENERATED BY CLAUSE AI (FREE TIER)
+MANDATORY DISCLOSURE:
+This is not personal legal advice, but instead is legal self-help. 
+When dealing with a legal issue consult a licensed attorney before you take action.
+--------------------------------------------------
+        """
+        
         st.download_button(
-            label="📥 Download Answer as Text",
-            data=response.text,
+            label="📥 Download Answer (.txt)",
+            data=download_text,
             file_name="clause_ai_response.txt",
             mime="text/plain"
         )
+        
+        # 2. Кнопки оценки (Thesis 5.1 Quality Feedback)
+        col_f1, col_f2, col_f3 = st.columns([2, 1, 1])
+        with col_f1:
+            st.caption("Was this helpful?")
+        with col_f2:
+            st.button("👍")
+        with col_f3:
+            st.button("👎")
+        
+        # ========================================================
         
     except Exception as e:
         st.error(f"Error: {e}")
