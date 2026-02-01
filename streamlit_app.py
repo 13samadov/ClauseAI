@@ -40,10 +40,10 @@ INSTRUCTIONS:
 - Disclaimer: End with "Not legal advice. AI MVP Demo."
 """
 
-# --- 5. ЗАПУСК МОДЕЛИ (GEMINI 2.0) ---
-# Используем модель из твоего списка
+# --- 5. ЗАПУСК МОДЕЛИ (СТАБИЛЬНАЯ ВЕРСИЯ) ---
+# Используем 'gemini-flash-latest' - она была в твоем списке доступных моделей
 try:
-    model = genai.GenerativeModel('gemini-2.0-flash', system_instruction=LEGAL_CONTEXT)
+    model = genai.GenerativeModel('gemini-flash-latest', system_instruction=LEGAL_CONTEXT)
 except:
     st.error("Model connection error. Please reload.")
 
@@ -62,7 +62,7 @@ if prompt := st.chat_input("Ex: My landlord kept my deposit..."):
     st.chat_message("user").write(prompt)
 
     try:
-        # Gemini 2.0 иногда требует список словарей без лишних полей
+        # Формируем историю для Gemini
         chat_history = []
         for m in st.session_state.messages[:-1]:
             chat_history.append({"role": "user" if m["role"] == "user" else "model", "parts": [m["content"]]})
