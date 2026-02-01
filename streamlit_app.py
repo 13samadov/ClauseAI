@@ -12,23 +12,10 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- 2. СТИЛИЗАЦИЯ (HTML ЛОГОТИП + ФУТЕР) ---
+# --- 2. СТИЛИЗАЦИЯ ---
 st.markdown("""
 <style>
     .main-header {font-size: 2.5rem; color: #4B9CD3;}
-    .footer {
-        position: fixed;
-        left: 0;
-        bottom: 0;
-        width: 100%;
-        background-color: #0E1117;
-        color: #808495;
-        text-align: center;
-        padding: 10px;
-        font-size: 0.8rem;
-        border-top: 1px solid #262730;
-        z-index: 100;
-    }
     /* Стилизация кнопок */
     .stButton button {
         border-radius: 8px;
@@ -165,9 +152,9 @@ try:
 except:
     st.error("Model connection error. Please reload.")
 
-# --- 6. САЙДБАР (С НОВЫМИ ФИШКАМИ) ---
+# --- 6. САЙДБАР (ЧИСТЫЙ И АККУРАТНЫЙ) ---
 with st.sidebar:
-    # ЛОГОТИП
+    # 1. ЛОГОТИП
     img_base64 = get_base64_image(LOGO_FILENAME)
     if img_base64:
         st.markdown(
@@ -183,8 +170,9 @@ with st.sidebar:
         st.warning(f"⚠️ Image '{LOGO_FILENAME}' not found.")
 
     st.header("⚖️ Clause AI")
-    st.success("🟢 System Online")
+    # УБРАЛ СТРОКУ SYSTEM ONLINE
     
+    # 2. КНОПКИ
     if st.button("🔄 Start New Chat", use_container_width=True):
         st.session_state.messages = [
             {"role": "assistant", "content": "Hello! I am Clause AI. I can analyze German contracts (PDF) or draft legal letters.\n\nDescribe your issue below."}
@@ -193,19 +181,18 @@ with st.sidebar:
     
     st.markdown("---")
     
-    # --- НОВОЕ: GDPR / PRIVACY TOGGLE (ИЗ ДИССЕРТАЦИИ) ---
+    # 3. GDPR / PRIVACY
     st.markdown("**🔐 Data Privacy**")
     privacy_mode = st.radio(
         "Select retention mode:",
         ["Ephemeral (No Logs)", "Persistent (Save History)"],
         index=0,
-        help="Ephemeral mode complies with GDPR data minimization (Thesis Section 5.2)."
+        help="Ephemeral mode complies with GDPR data minimization."
     )
-    # ----------------------------------------------------
 
     st.markdown("---")
     
-    # PDF UPLOADER
+    # 4. PDF UPLOADER
     st.subheader("📂 Contract Analyzer")
     uploaded_file = st.file_uploader("Upload Contract (PDF)", type="pdf")
     
@@ -217,18 +204,24 @@ with st.sidebar:
 
     st.markdown("---")
     
-    # --- ССЫЛКА НА АДВОКАТА (ОБНОВЛЕНО!) ---
+    # 5. ССЫЛКА НА АДВОКАТА (РАБОЧАЯ ГИПЕРССЫЛКА)
     with st.expander("👨‍⚖️ Find a Lawyer (Partner)"):
-        st.caption("Complex case? Connect with our partner network (Thesis Section 4.14).")
-        # Теперь это настоящая ссылка!
-        st.link_button("Search Lawyer Database", "https://www.bestlawyers.com/germany/munich")
-    # ------------------------------------------
+        st.caption("Complex case? Connect with our partner network.")
+        # Гиперссылка
+        st.link_button("Search BestLawyers.com", "https://www.bestlawyers.com/germany/munich")
+    
+    # 6. ИНФОРМАЦИЯ О ПРОЕКТЕ (ВМЕСТО ФУТЕРА)
+    st.markdown("---")
+    st.caption("🎓 **Master Thesis Project**")
+    st.caption("🛡️ Not Legal Advice")
+    st.caption("🤖 Powered by Gemini 1.5")
+    st.caption("🇪🇺 Hosted in EU (GDPR)")
 
 # --- 7. ГЛАВНЫЙ ЭКРАН ---
 st.title("Clause AI: Legal Self-Help Assistant")
 st.markdown("##### 🚀 AI-Powered Legal Guidance for Germany")
 
-# Карточки возможностей (Финал)
+# Карточки возможностей
 col1, col2, col3 = st.columns(3)
 
 with col1:
@@ -338,13 +331,3 @@ if prompt := st.chat_input("Describe your legal issue..."):
         
     except Exception as e:
         st.error(f"Error: {e}")
-
-# --- 11. ФУТЕР ---
-st.markdown(
-    """
-    <div class="footer">
-        <p>🎓 Master Thesis Project | 🛡️ Not Legal Advice | 🤖 Powered by Gemini 1.5 | 🇪🇺 Hosted in EU (GDPR)</p>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
