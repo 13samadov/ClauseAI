@@ -10,25 +10,25 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- 2. СТИЛИЗАЦИЯ И ЛОГОТИП ---
-# Имя твоего файла. Убедись, что он загружен на GitHub!
+# --- 2. СТИЛИЗАЦИЯ И ЛОГОТИП (ИСПРАВЛЕНО) ---
 LOGO_URL = "clauseailogo.png"
 
 st.markdown(f"""
 <style>
     .main-header {{font-size: 2.5rem; color: #4B9CD3;}}
     
-    /* CSS ДЛЯ КРУГЛОЙ ИКОНКИ */
+    /* CSS ДЛЯ ЛОГОТИПА */
+    /* Мы используем !important, чтобы перебить настройки Streamlit */
     [data-testid="stSidebar"] [data-testid="stImage"] > img {{
-        border-radius: 50%;        /* Делает идеальный круг */
-        border: 3px solid #4B9CD3; /* Синяя рамка (чуть тоньше) */
-        width: 100px;              /* Уменьшенный размер */
-        height: 100px;             /* Высота равна ширине */
-        object-fit: cover;         /* Картинка заполняет круг красиво */
-        display: block;
-        margin-left: auto;
-        margin-right: auto;
-        margin-bottom: 20px;
+        border-radius: 50% !important;       /* Делает круг */
+        border: 3px solid #4B9CD3 !important; /* Синяя рамка */
+        width: 100px !important;             /* Ширина */
+        height: 100px !important;            /* Высота ОБЯЗАТЕЛЬНО равна ширине */
+        object-fit: cover !important;        /* ОБРЕЗАЕТ картинку до квадрата */
+        display: block !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        margin-bottom: 20px !important;
     }}
 </style>
 """, unsafe_allow_html=True)
@@ -150,7 +150,7 @@ except:
 
 # --- 6. САЙДБАР (БОКОВОЕ МЕНЮ) ---
 with st.sidebar:
-    # 1. ЛОГОТИП (Теперь круглый и меньше)
+    # 1. ЛОГОТИП
     try:
         st.image(LOGO_URL)
     except:
