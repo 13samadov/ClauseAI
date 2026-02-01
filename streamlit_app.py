@@ -2,6 +2,7 @@ import streamlit as st
 import google.generativeai as genai
 import PyPDF2
 import base64
+import time
 
 # --- 1. НАСТРОЙКИ СТРАНИЦЫ ---
 st.set_page_config(
@@ -11,17 +12,28 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- 2. СТИЛИЗАЦИЯ (HTML ЛОГОТИП) ---
+# --- 2. СТИЛИЗАЦИЯ (HTML ЛОГОТИП + ФУТЕР) ---
 st.markdown("""
 <style>
     .main-header {font-size: 2.5rem; color: #4B9CD3;}
+    .footer {
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        background-color: #0E1117;
+        color: #808495;
+        text-align: center;
+        padding: 10px;
+        font-size: 0.8rem;
+        border-top: 1px solid #262730;
+    }
 </style>
 """, unsafe_allow_html=True)
 
 # Имя твоего файла с логотипом
 LOGO_FILENAME = "clauseailogo.png"
 
-# Функция для конвертации картинки в код, понятный браузеру
 def get_base64_image(image_path):
     try:
         with open(image_path, "rb") as img_file:
@@ -146,7 +158,7 @@ except:
 
 # --- 6. САЙДБАР (HTML ИНЪЕКЦИЯ ДЛЯ ЛОГО) ---
 with st.sidebar:
-    # 1. ЛОГОТИП (HTML VERSION - ИДЕАЛЬНЫЙ КРУГ)
+    # 1. ЛОГОТИП (КРУГЛЫЙ)
     img_base64 = get_base64_image(LOGO_FILENAME)
     if img_base64:
         st.markdown(
@@ -193,11 +205,11 @@ with st.sidebar:
     
     st.caption("Master Thesis Defense MVP")
 
-# --- 7. ГЛАВНЫЙ ЭКРАН (ОБНОВЛЕННЫЕ КАРТОЧКИ) ---
+# --- 7. ГЛАВНЫЙ ЭКРАН (КАРТОЧКИ) ---
 st.title("Clause AI: Legal Self-Help Assistant")
 st.markdown("##### 🚀 AI-Powered Legal Guidance for Germany")
 
-# Карточки возможностей (Новый дизайн)
+# Карточки возможностей
 col1, col2, col3 = st.columns(3)
 
 with col1:
@@ -267,7 +279,7 @@ if process_button and uploaded_file:
                 f"CONTRACT TEXT:\n{pdf_text}"
             )
             
-            # Добавляем сообщение пользователя в чат
+            # Добавляем сообщение пользователя
             st.session_state.messages.append({"role": "user", "content": f"📂 Analyzed contract: {uploaded_file.name}"})
             st.chat_message("user").write(f"📂 Analyzed contract: {uploaded_file.name}")
 
@@ -302,8 +314,28 @@ if prompt := st.chat_input("Describe your legal issue..."):
         with st.spinner("Analyzing Laws & Drafting..."):
             response = chat.send_message(prompt)
         
+        # Показываем ответ
         st.session_state.messages.append({"role": "assistant", "content": response.text})
         st.chat_message("assistant").write(response.text)
         
+        # === КНОПКА СКАЧИВАНИЯ (НОВАЯ ФИШКА!) ===
+        st.download_button(
+            label="📥 Download Answer as Text",
+            data=response.text,
+            file_name="clause_ai_response.txt",
+            mime="text/plain"
+        )
+        # ========================================
+        
     except Exception as e:
         st.error(f"Error: {e}")
+
+# --- 11. ФУТЕР (НОВАЯ ФИШКА!) ---
+st.markdown(
+    """
+    <div class="footer">
+        <p>🎓 Master Thesis Project | 🛡️ Not Legal Advice | 🤖 Powered by Gemini 1.5</p>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
