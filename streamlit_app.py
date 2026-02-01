@@ -132,10 +132,19 @@ try:
 except:
     st.error("Model connection error. Please reload.")
 
-# --- 6. САЙДБАР (С ЗАГРУЗКОЙ PDF) ---
+# --- 6. САЙДБАР (С НОВОЙ КНОПКОЙ И ЗАГРУЗКОЙ) ---
 with st.sidebar:
     st.header("⚖️ Clause AI")
     st.success("🟢 System Online")
+    
+    # === КНОПКА НОВОГО ЧАТА (НОВОЕ!) ===
+    if st.button("🔄 Start New Chat", use_container_width=True):
+        st.session_state.messages = [
+            {"role": "assistant", "content": "Hello! I am Clause AI. I can analyze German contracts (PDF) or draft legal letters.\n\nDescribe your issue below."}
+        ]
+        st.rerun()
+    # ===================================
+    
     st.markdown("---")
     
     # === PDF UPLOADER ===
