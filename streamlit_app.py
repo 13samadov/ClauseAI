@@ -1,7 +1,8 @@
 import streamlit as st
 import google.generativeai as genai
+import PyPDF2
 
-# --- 1. НАСТРОЙКИ СТРАНИЦЫ (WIDE MODE) ---
+# --- 1. НАСТРОЙКИ СТРАНИЦЫ ---
 st.set_page_config(
     page_title="Clause AI",
     page_icon="⚖️",
@@ -9,7 +10,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- 2. CSS-СТИЛИЗАЦИЯ ---
+# --- 2. СТИЛИЗАЦИЯ ---
 st.markdown("""
 <style>
     .main-header {font-size: 2.5rem; color: #4B9CD3;}
@@ -22,7 +23,7 @@ if "GOOGLE_API_KEY" in st.secrets:
 else:
     st.error("⚠️ API Key is missing. Please set it in Streamlit Secrets.")
 
-# --- 4. ЮРИДИЧЕСКАЯ БАЗА (ПОЛНАЯ ВЕРСИЯ) ---
+# --- 4. БАЗА ЗНАНИЙ (ПОЛНАЯ ВЕРСИЯ) ---
 LEGAL_CONTEXT = """
 SYSTEM ROLE:
 You are Clause AI, a specialized legal assistant for Germany (MVP).
@@ -33,12 +34,15 @@ INSTRUCTIONS (STRICT):
    - If the user writes in **German** -> Explain the legal situation in **German**.
 
 2. DRAFTING DOCUMENTS (THE "GERMANY" RULE):
-   - All formal letters, emails, or contract clauses MUST be drafted in **PERFECT FORMAL GERMAN** (Amtsdeutsch), regardless of the user's language.
-   - **CRITICAL:** If you are communicating in English, immediately below the German draft, provide an **English Translation/Summary** so the user knows exactly what they are sending.
+   - All formal letters, emails, or contract clauses MUST be drafted in **PERFECT FORMAL GERMAN** (Amtsdeutsch).
+   - **CRITICAL:** Immediately below the German draft, provide an **English Translation/Summary** so the user knows exactly what they are sending.
 
-3. CITATION & DISCLAIMER:
-   - Always cite the specific Paragraph (§) from the Knowledge Base.
-   - End every response with: "Not legal advice. AI MVP Demo."
+3. PDF CONTRACT ANALYSIS:
+   - If the user uploads a contract, scan it for "Red Flags" using § 309 BGB.
+   - Summarize risks in English.
+
+4. DISCLAIMER:
+   - Always cite the Paragraph (§). End with: "Not legal advice. AI MVP Demo."
 
 *** KNOWLEDGE BASE FOR CLAUSE AI ***
 *** JURISDICTION: GERMANY (DE) ***
@@ -74,7 +78,6 @@ TEXT:
 (1) Die Kündigung ist spätestens am dritten Werktag eines Kalendermonats zum Ablauf des übernächsten Monats zulässig. Die Kündigungsfrist für den Vermieter verlängert sich nach fünf und acht Jahren seit der Überlassung des Wohnraums um jeweils drei Monate.
 (4) Eine zum Nachteil des Mieters von Absatz 1 oder 3 abweichende Vereinbarung ist unwirksam.
 
-
 === CATEGORY: CONTRACTS & CONSUMER LAW (VERTRAGSRECHT) ===
 Use these laws for cancelling subscriptions (gym, internet, phone) and checking contract "Red Flags".
 
@@ -96,7 +99,6 @@ Auch soweit eine Abweichung von den gesetzlichen Vorschriften zulässig ist, ist
 7. (Haftungsausschluss) ein Ausschluss oder eine Begrenzung der Haftung für Schäden aus der Verletzung des Lebens, des Körpers oder der Gesundheit...
 9. (Laufzeit) eine den anderen Vertragsteil länger als zwei Jahre bindende Laufzeit des Vertrags... oder eine stillschweigende Verlängerung... es sei denn das Vertragsverhältnis wird nur auf unbestimmte Zeit verlängert und ist monatlich kündbar.
 
-
 === CATEGORY: FREELANCE & SERVICE LAW (DIENSTVERTRAG) ===
 Use these laws for freelancer invoices, late payments, and service agreements.
 
@@ -115,7 +117,6 @@ TEXT:
 (2) Bei Rechtsgeschäften, an denen ein Verbraucher nicht beteiligt ist (B2B), beträgt der Zinssatz für Entgeltforderungen neun Prozentpunkte über dem Basiszinssatz.
 (5) Der Gläubiger einer Entgeltforderung hat bei Verzug des Schuldners (B2B) außerdem einen Anspruch auf Zahlung einer Pauschale in Höhe von 40 Euro.
 
-
 === CATEGORY: COMPLIANCE & LIMITATIONS ===
 Use this to define the bot's boundaries.
 
@@ -131,60 +132,98 @@ try:
 except:
     st.error("Model connection error. Please reload.")
 
-# --- 6. САЙДБАР (ЛЕВАЯ ПАНЕЛЬ) ---
+# --- 6. САЙДБАР (С ЗАГРУЗКОЙ PDF) ---
 with st.sidebar:
     st.header("⚖️ Clause AI")
     st.success("🟢 System Online")
     st.markdown("---")
-    st.markdown("**Master Thesis Defense**")
-    st.caption("Developed by [Your Name]")
     
+    # === PDF UPLOADER ===
+    st.subheader("📂 Contract Analyzer")
+    uploaded_file = st.file_uploader("Upload Contract (PDF)", type="pdf")
+    
+    process_button = False
+    if uploaded_file is not None:
+        st.info("File uploaded!")
+        if st.button("🕵️‍♂️ Analyze for Red Flags"):
+            process_button = True
+    # ====================
+
     st.markdown("---")
-    st.subheader("🛠 Capabilities")
-    st.markdown("- 🇩🇪 **BGB Analysis**")
-    st.markdown("- 📝 **Document Drafting**")
-    st.markdown("- 🇬🇧 **Translation**")
+    with st.expander("📚 Knowledge Base (Loaded)"):
+        st.caption("✅ Tenancy Law (§535-573c)")
+        st.caption("✅ Contracts (§309, §314)")
+        st.caption("✅ Freelance (§286, §288)")
     
-    with st.expander("📚 Supported Laws (BGB)"):
-        st.caption("Tenancy Law (§535-573c)")
-        st.caption("Contracts (§309, §314, §355)")
-        st.caption("Freelance (§286, §288, §611)")
+    st.caption("Master Thesis Defense MVP")
 
 # --- 7. ГЛАВНЫЙ ЭКРАН ---
 st.title("Clause AI: Legal Self-Help Assistant")
 st.markdown("##### 🚀 AI-Powered Legal Guidance for Germany")
 
-# Карточки возможностей
+# Карточки
 col1, col2, col3 = st.columns(3)
-
 with col1:
-    with st.container(border=True):
-        st.markdown("### 🏠 Tenancy")
-        st.caption("Deposit issues, Rent reduction, Repairs.")
-
+    st.markdown("### 🏠 Tenancy")
+    st.caption("Deposits, Repairs, §548 BGB")
 with col2:
-    with st.container(border=True):
-        st.markdown("### 📄 Contracts")
-        st.caption("Gym cancellation, Phone contracts, 'Red Flags'.")
-
+    st.markdown("### 📄 Contracts")
+    st.caption("Gym, Phone, §309 BGB")
 with col3:
-    with st.container(border=True):
-        st.markdown("### 💼 Freelance")
-        st.caption("Unpaid invoices, Late fees, B2B rights.")
+    st.markdown("### 💼 Freelance")
+    st.caption("Invoices, Fees, §288 BGB")
 
 st.markdown("---")
 
 # --- 8. ЧАТ ---
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "content": "Hello! I am ready to help. Select a topic above or describe your issue below.\n\n*Example: 'My landlord kept my deposit.'*"}
+        {"role": "assistant", "content": "Hello! I am Clause AI. I can analyze German contracts (PDF) or draft legal letters.\n\nDescribe your issue below."}
     ]
 
+# История
 for msg in st.session_state.messages:
     st.chat_message(msg["role"]).write(msg["content"])
 
-# --- 9. ВВОД СООБЩЕНИЯ ---
-if prompt := st.chat_input("Describe your legal issue (English or German)..."):
+# --- 9. ЛОГИКА АНАЛИЗА PDF ---
+if process_button and uploaded_file:
+    with st.spinner("Reading PDF and checking against § 309 BGB..."):
+        try:
+            # Читаем PDF
+            pdf_reader = PyPDF2.PdfReader(uploaded_file)
+            pdf_text = ""
+            for page in pdf_reader.pages:
+                pdf_text += page.extract_text()
+            
+            # Промпт для анализа
+            analysis_prompt = (
+                f"ACT AS A LEGAL EXPERT. Analyze this contract text specifically for 'Red Flags' "
+                f"and unfair clauses according to § 309 BGB (Knowledge Base).\n"
+                f"Identify risks for the tenant/user.\n"
+                f"Output: A summary of risks in English.\n\n"
+                f"CONTRACT TEXT:\n{pdf_text}"
+            )
+            
+            # Добавляем в чат
+            st.session_state.messages.append({"role": "user", "content": f"📂 Analyzed contract: {uploaded_file.name}"})
+            st.chat_message("user").write(f"📂 Analyzed contract: {uploaded_file.name}")
+
+            # Отправляем в AI
+            chat_history = []
+            for m in st.session_state.messages[:-1]:
+                chat_history.append({"role": "user" if m["role"] == "user" else "model", "parts": [m["content"]]})
+            
+            chat = model.start_chat(history=chat_history)
+            response = chat.send_message(analysis_prompt)
+            
+            st.session_state.messages.append({"role": "assistant", "content": response.text})
+            st.chat_message("assistant").write(response.text)
+            
+        except Exception as e:
+            st.error(f"Error reading PDF: {e}")
+
+# --- 10. ОБЫЧНЫЙ ЧАТ ---
+if prompt := st.chat_input("Describe your legal issue..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     st.chat_message("user").write(prompt)
 
@@ -195,9 +234,9 @@ if prompt := st.chat_input("Describe your legal issue (English or German)..."):
 
         chat = model.start_chat(history=chat_history)
         
-        with st.spinner("⚖️ Analyzing BGB & Drafting response..."):
+        with st.spinner("Analyzing Laws & Drafting..."):
             response = chat.send_message(prompt)
-            
+        
         st.session_state.messages.append({"role": "assistant", "content": response.text})
         st.chat_message("assistant").write(response.text)
         
