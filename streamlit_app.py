@@ -152,7 +152,7 @@ try:
 except:
     st.error("Model connection error. Please reload.")
 
-# --- 6. САЙДБАР (ЧИСТЫЙ И АККУРАТНЫЙ) ---
+# --- 6. САЙДБАР (ЧИСТЫЙ ДИЗАЙН) ---
 with st.sidebar:
     # 1. ЛОГОТИП
     img_base64 = get_base64_image(LOGO_FILENAME)
@@ -170,7 +170,9 @@ with st.sidebar:
         st.warning(f"⚠️ Image '{LOGO_FILENAME}' not found.")
 
     st.header("⚖️ Clause AI")
-    # УБРАЛ СТРОКУ SYSTEM ONLINE
+    # === СЛОГАН (НОВОЕ!) ===
+    st.markdown('<p style="font-style: italic; color: #808495; margin-top: -15px;">Rule the Rules</p>', unsafe_allow_html=True)
+    # ========================
     
     # 2. КНОПКИ
     if st.button("🔄 Start New Chat", use_container_width=True):
@@ -204,18 +206,12 @@ with st.sidebar:
 
     st.markdown("---")
     
-    # 5. ССЫЛКА НА АДВОКАТА (РАБОЧАЯ ГИПЕРССЫЛКА)
+    # 5. ССЫЛКА НА АДВОКАТА
     with st.expander("👨‍⚖️ Find a Lawyer (Partner)"):
         st.caption("Complex case? Connect with our partner network.")
-        # Гиперссылка
         st.link_button("Search BestLawyers.com", "https://www.bestlawyers.com/germany/munich")
     
-    # 6. ИНФОРМАЦИЯ О ПРОЕКТЕ (ВМЕСТО ФУТЕРА)
-    st.markdown("---")
-    st.caption("🎓 **Master Thesis Project**")
-    st.caption("🛡️ Not Legal Advice")
-    st.caption("🤖 Powered by Gemini 1.5")
-    st.caption("🇪🇺 Hosted in EU (GDPR)")
+    # (НИЖНИЙ ТЕКСТ УДАЛЕН ПО ЗАПРОСУ)
 
 # --- 7. ГЛАВНЫЙ ЭКРАН ---
 st.title("Clause AI: Legal Self-Help Assistant")
