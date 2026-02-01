@@ -24,7 +24,7 @@ st.markdown("""
         border: 1px solid #4B9CD3;
     }
     
-    /* Убираем лишние отступы */
+    /* Убираем лишние отступы сверху */
     .block-container {
         padding-top: 2rem;
     }
@@ -319,9 +319,9 @@ if prompt := st.chat_input("Describe your legal issue..."):
         st.session_state.messages.append({"role": "assistant", "content": response.text})
         st.chat_message("assistant").write(response.text)
         
-        # === ИСПРАВЛЕННЫЙ БЛОК: КНОПКИ РОВНО ===
+        # === ИСПРАВЛЕНО: КНОПКИ ВПЛОТНУЮ ===
         
-        # 1. СКАЧИВАНИЕ (Широкая кнопка)
+        # 1. Скачивание
         download_text = f"""
 {response.text}
 
@@ -340,13 +340,12 @@ When dealing with a legal issue consult a licensed attorney before you take acti
             mime="text/plain"
         )
         
-        # 2. ОЦЕНКА (РОВНЫЙ РЯД КНОПОК)
-        # 1 и 1 — узкие колонки для кнопок, 8 — пустота справа
-        col_like, col_dislike, col_space = st.columns([1, 1, 8]) 
+        # 2. Кнопки (Пропорция 1:1:12 - две узкие кнопки слева)
+        col1, col2, col3 = st.columns([1, 1, 12]) 
         
-        with col_like:
+        with col1:
             st.button("👍")
-        with col_dislike:
+        with col2:
             st.button("👎")
         
     except Exception as e:
