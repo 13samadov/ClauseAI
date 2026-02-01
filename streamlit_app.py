@@ -10,10 +10,26 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- 2. СТИЛИЗАЦИЯ ---
-st.markdown("""
+# --- 2. СТИЛИЗАЦИЯ И ЛОГОТИП ---
+# Имя твоего файла. Убедись, что он загружен на GitHub!
+LOGO_URL = "clauseailogo.png"
+
+st.markdown(f"""
 <style>
-    .main-header {font-size: 2.5rem; color: #4B9CD3;}
+    .main-header {{font-size: 2.5rem; color: #4B9CD3;}}
+    
+    /* CSS для того, чтобы сделать логотип круглым и красивым */
+    [data-testid="stSidebar"] [data-testid="stImage"] > img {{
+        border-radius: 50%;
+        border: 4px solid #4B9CD3;
+        width: 130px;
+        height: 130px;
+        object-fit: cover;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        margin-bottom: 20px;
+    }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -115,7 +131,7 @@ LAW: § 288 BGB - Verzugszinsen (Default Interest)
 TEXT:
 (1) Eine Geldschuld ist während des Verzugs zu verzinsen. Der Verzugszinssatz beträgt für das Jahr fünf Prozentpunkte über dem Basiszinssatz.
 (2) Bei Rechtsgeschäften, an denen ein Verbraucher nicht beteiligt ist (B2B), beträgt der Zinssatz für Entgeltforderungen neun Prozentpunkte über dem Basiszinssatz.
-(5) Der Gläubiger einer Entgeltforderung hat bei Verzug des Schuldners (B2B) außerdem einen Anspruch auf Zahlung einer Pauschale in Höhe von 40 Euro.
+(5) Der Gläubiger einer Entgeltforderung hat bei Verzug des Schuldners (B2B) außerdem einen Anspruch на Zahlung einer Pauschale in Höhe von 40 Euro.
 
 === CATEGORY: COMPLIANCE & LIMITATIONS ===
 Use this to define the bot's boundaries.
@@ -132,22 +148,27 @@ try:
 except:
     st.error("Model connection error. Please reload.")
 
-# --- 6. САЙДБАР (С НОВОЙ КНОПКОЙ И ЗАГРУЗКОЙ) ---
+# --- 6. САЙДБАР (БОКОВОЕ МЕНЮ) ---
 with st.sidebar:
+    # 1. ЛОГОТИП
+    try:
+        st.image(LOGO_URL)
+    except:
+        st.warning(f"⚠️ Image '{LOGO_URL}' not found. Please upload it to GitHub.")
+
     st.header("⚖️ Clause AI")
     st.success("🟢 System Online")
     
-    # === КНОПКА НОВОГО ЧАТА (НОВОЕ!) ===
+    # 2. КНОПКА "НОВЫЙ ЧАТ"
     if st.button("🔄 Start New Chat", use_container_width=True):
         st.session_state.messages = [
             {"role": "assistant", "content": "Hello! I am Clause AI. I can analyze German contracts (PDF) or draft legal letters.\n\nDescribe your issue below."}
         ]
         st.rerun()
-    # ===================================
     
     st.markdown("---")
     
-    # === PDF UPLOADER ===
+    # 3. ЗАГРУЗКА PDF
     st.subheader("📂 Contract Analyzer")
     uploaded_file = st.file_uploader("Upload Contract (PDF)", type="pdf")
     
@@ -156,9 +177,10 @@ with st.sidebar:
         st.info("File uploaded!")
         if st.button("🕵️‍♂️ Analyze for Red Flags"):
             process_button = True
-    # ====================
 
     st.markdown("---")
+    
+    # 4. БАЗА ЗНАНИЙ
     with st.expander("📚 Knowledge Base (Loaded)"):
         st.caption("✅ Tenancy Law (§535-573c)")
         st.caption("✅ Contracts (§309, §314)")
@@ -170,7 +192,7 @@ with st.sidebar:
 st.title("Clause AI: Legal Self-Help Assistant")
 st.markdown("##### 🚀 AI-Powered Legal Guidance for Germany")
 
-# Карточки
+# Карточки возможностей
 col1, col2, col3 = st.columns(3)
 with col1:
     st.markdown("### 🏠 Tenancy")
@@ -190,7 +212,7 @@ if "messages" not in st.session_state:
         {"role": "assistant", "content": "Hello! I am Clause AI. I can analyze German contracts (PDF) or draft legal letters.\n\nDescribe your issue below."}
     ]
 
-# История
+# Отображение истории чата
 for msg in st.session_state.messages:
     st.chat_message(msg["role"]).write(msg["content"])
 
@@ -213,7 +235,7 @@ if process_button and uploaded_file:
                 f"CONTRACT TEXT:\n{pdf_text}"
             )
             
-            # Добавляем в чат
+            # Добавляем сообщение пользователя в чат
             st.session_state.messages.append({"role": "user", "content": f"📂 Analyzed contract: {uploaded_file.name}"})
             st.chat_message("user").write(f"📂 Analyzed contract: {uploaded_file.name}")
 
@@ -225,6 +247,7 @@ if process_button and uploaded_file:
             chat = model.start_chat(history=chat_history)
             response = chat.send_message(analysis_prompt)
             
+            # Показываем ответ
             st.session_state.messages.append({"role": "assistant", "content": response.text})
             st.chat_message("assistant").write(response.text)
             
@@ -237,6 +260,7 @@ if prompt := st.chat_input("Describe your legal issue..."):
     st.chat_message("user").write(prompt)
 
     try:
+        # Формируем историю
         chat_history = []
         for m in st.session_state.messages[:-1]:
             chat_history.append({"role": "user" if m["role"] == "user" else "model", "parts": [m["content"]]})
