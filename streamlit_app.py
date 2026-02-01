@@ -9,73 +9,68 @@ st.title("⚖️ Clause AI")
 st.caption("🚀 Legal Self-Help MVP | Master Thesis Defense")
 st.markdown("---")
 
-# --- 3. ПОДКЛЮЧЕНИЕ "МОЗГОВ" (БЕЗОПАСНО) ---
-# Ключ берется из секретного хранилища Streamlit (мы настроим это на след. этапе)
+# --- 3. ПОДКЛЮЧЕНИЕ "МОЗГОВ" ---
 if "GOOGLE_API_KEY" in st.secrets:
     genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
 else:
     st.error("⚠️ API Key is missing. Please set it in Streamlit Secrets.")
 
-# --- 4. БАЗА ЗНАНИЙ (ВШИТЫЕ ЗАКОНЫ BGB) ---
-# Бот использует это как инструкцию
+# --- 4. БАЗА ЗНАНИЙ (BGB) ---
 LEGAL_CONTEXT = """
 SYSTEM ROLE:
 You are Clause AI, a specialized legal assistant for Germany (MVP).
-Your goal is to help students, migrants, and freelancers understand their rights.
 
 KNOWLEDGE BASE (GERMAN CIVIL CODE - BGB):
-
-== 1. TENANCY LAW (MIETRECHT) ==
-- DEPOSIT (§ 551 BGB): Maximum deposit is 3 months' cold rent.
-- LIMITATION PERIOD (§ 548 BGB): Landlord claims for damages/renovations EXPIRE strictly after 6 months from move-out. If they demand money later, the tenant can refuse.
-- DEFECTS (§ 536 BGB): Tenant can reduce rent (Mietminderung) for mold, heating failure, or construction noise.
-
-== 2. CONTRACTS (VERTRAGSRECHT) ==
-- TERMINATION (§ 314 BGB): Right to cancel ANY long-term contract (gym, internet) immediately for "Important Reason" (e.g., moving abroad).
-- UNFAIR CLAUSES (§ 309 BGB): Clauses are INVALID if they ban all pets or require "professional" painting only.
-
-== 3. FREELANCE WORK ==
-- LATE PAYMENTS (§ 286, 288 BGB): If a B2B client is late, you can charge default interest (+9%) AND a €40 flat fee.
+1. DEPOSIT (§ 551, § 548 BGB): Max deposit 3 months. Landlord claims expire after 6 months.
+2. CONTRACTS (§ 314, § 309 BGB): Right to cancel for "Important Reason". No automatic renewal >2 years.
+3. FREELANCE (§ 286, § 288 BGB): Default interest +9% and €40 fee for late B2B payments.
 
 INSTRUCTIONS:
-1. Explain the legal situation in English (for the user).
-2. DRAFT formal letters/emails in German (for the opponent).
-3. "Wizard Mode": If details (dates, names) are missing, ASK the user before drafting.
-4. Always cite the specific Paragraph (§).
-5. Disclaimer: End with "Not legal advice. AI MVP demo."
+- Answer in English, but draft letters in German.
+- Always cite the Paragraph (§).
+- Disclaimer: "Not legal advice. MVP Demo."
 """
 
-# --- 5. ЗАПУСК МОДЕЛИ ---
-# Используем быструю модель для демо
-model = genai.GenerativeModel('gemini-1.5-flash', system_instruction=LEGAL_CONTEXT)
+# --- 5. ЗАПУСК МОДЕЛИ (ИСПРАВЛЕНО) ---
+# Мы используем 'gemini-pro' — самую стабильную версию
+# system_instruction передаем напрямую в настройки, если библиотека поддерживает,
+# или модель поймет это из контекста.
+try:
+    model = genai.GenerativeModel('gemini-pro')
+except:
+    st.error("Model Error. Please reload.")
 
 # --- 6. ЧАТ (ИСТОРИЯ) ---
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "content": "Hello! I am Clause AI. I can help with:\n- 🏠 Landlord disputes (Deposits, Repairs)\n- 📄 Contract cancellations\n- 💼 Freelance invoices\n\nHow can I help you today?"}
+        {"role": "assistant", "content": "Hello! I am Clause AI. I can help with:\n- 🏠 Tenancy disputes\n- 📄 Contracts\n- 💼 Freelance payments\n\nHow can I help?"}
     ]
 
-# Показываем прошлые сообщения
+# Отображаем историю
 for msg in st.session_state.messages:
     st.chat_message(msg["role"]).write(msg["content"])
 
 # --- 7. ЛОГИКА ОТВЕТА ---
-if prompt := st.chat_input("Describe your issue (e.g., 'My landlord kept my deposit')..."):
-    # Пишем вопрос пользователя
+if prompt := st.chat_input("Describe your issue..."):
+    # Добавляем сообщение пользователя
     st.session_state.messages.append({"role": "user", "content": prompt})
     st.chat_message("user").write(prompt)
 
     try:
-        # Отправляем в Google Gemini
+        # Формируем полный контекст (Инструкция + История)
+        # Это "Хак", чтобы модель точно следовала инструкциям, даже старая версия
+        full_prompt = LEGAL_CONTEXT + "\n\nUSER QUESTION:\n" + prompt
+        
+        # Отправляем в чат
         chat = model.start_chat(history=[
             {"role": m["role"] if m["role"] == "user" else "model", "parts": [m["content"]]} 
-            for m in st.session_state.messages
+            for m in st.session_state.messages[:-1] # берем историю без последнего вопроса, т.к. мы его добавим в full_prompt
         ])
         
-        with st.spinner("Analyzing German Civil Code (BGB)..."):
-            response = chat.send_message(prompt)
+        with st.spinner("Consulting BGB..."):
+            response = chat.send_message(full_prompt)
             
-        # Пишем ответ бота
+        # Показываем ответ
         st.session_state.messages.append({"role": "assistant", "content": response.text})
         st.chat_message("assistant").write(response.text)
         
