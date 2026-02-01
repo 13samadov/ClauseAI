@@ -18,7 +18,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Имя твоего файла
+# Имя твоего файла с логотипом
 LOGO_FILENAME = "clauseailogo.png"
 
 # Функция для конвертации картинки в код, понятный браузеру
@@ -35,7 +35,7 @@ if "GOOGLE_API_KEY" in st.secrets:
 else:
     st.error("⚠️ API Key is missing. Please set it in Streamlit Secrets.")
 
-# --- 4. БАЗА ЗНАНИЙ ---
+# --- 4. БАЗА ЗНАНИЙ (ПОЛНАЯ ВЕРСИЯ) ---
 LEGAL_CONTEXT = """
 SYSTEM ROLE:
 You are Clause AI, a specialized legal assistant for Germany (MVP).
@@ -108,7 +108,7 @@ TEXT:
 Auch soweit eine Abweichung von den gesetzlichen Vorschriften zulässig ist, ist in Allgemeinen Geschäftsbedingungen unwirksam:
 1. (Kurzfristige Preiserhöhungen) eine Bestimmung, welche die Erhöhung des Entgelts für Waren oder Leistungen vorsieht, die innerhalb von vier Monaten nach Vertragsschluss geliefert oder erbracht werden sollen...
 5. (Pauschalierung von Schadensersatzansprüchen) die Vereinbarung eines pauschalierten Anspruchs des Verwenders auf Schadensersatz... wenn die Pauschale den gewöhnlichen Schaden übersteigt.
-7. (Haftungsausschluss) ein Ausschluss oder eine Begrenzung der Haftung для Schäden aus der Verletzung des Lebens, des Körpers oder der Gesundheit...
+7. (Haftungsausschluss) ein Ausschluss oder eine Begrenzung der Haftung für Schäden aus der Verletzung des Lebens, des Körpers oder der Gesundheit...
 9. (Laufzeit) eine den anderen Vertragsteil länger als zwei Jahre bindende Laufzeit des Vertrags... oder eine stillschweigende Verlängerung... es sei denn das Vertragsverhältnis wird nur auf unbestimmte Zeit verlängert und ist monatlich kündbar.
 
 === CATEGORY: FREELANCE & SERVICE LAW (DIENSTVERTRAG) ===
@@ -127,7 +127,7 @@ LAW: § 288 BGB - Verzugszinsen (Default Interest)
 TEXT:
 (1) Eine Geldschuld ist während des Verzugs zu verzinsen. Der Verzugszinssatz beträgt für das Jahr fünf Prozentpunkte über dem Basiszinssatz.
 (2) Bei Rechtsgeschäften, an denen ein Verbraucher nicht beteiligt ist (B2B), beträgt der Zinssatz für Entgeltforderungen neun Prozentpunkte über dem Basiszinssatz.
-(5) Der Gläubiger einer Entgeltforderung hat bei Verzug des Schuldners (B2B) außerdem einen Anspruch на Zahlung einer Pauschale in Höhe von 40 Euro.
+(5) Der Gläubiger einer Entgeltforderung hat bei Verzug des Schuldners (B2B) außerdem einen Anspruch auf Zahlung einer Pauschale in Höhe von 40 Euro.
 
 === CATEGORY: COMPLIANCE & LIMITATIONS ===
 Use this to define the bot's boundaries.
@@ -146,7 +146,7 @@ except:
 
 # --- 6. САЙДБАР (HTML ИНЪЕКЦИЯ ДЛЯ ЛОГО) ---
 with st.sidebar:
-    # 1. ЛОГОТИП (HTML VERSION)
+    # 1. ЛОГОТИП (HTML VERSION - ИДЕАЛЬНЫЙ КРУГ)
     img_base64 = get_base64_image(LOGO_FILENAME)
     if img_base64:
         st.markdown(
@@ -193,21 +193,48 @@ with st.sidebar:
     
     st.caption("Master Thesis Defense MVP")
 
-# --- 7. ГЛАВНЫЙ ЭКРАН ---
+# --- 7. ГЛАВНЫЙ ЭКРАН (ОБНОВЛЕННЫЕ КАРТОЧКИ) ---
 st.title("Clause AI: Legal Self-Help Assistant")
 st.markdown("##### 🚀 AI-Powered Legal Guidance for Germany")
 
-# Карточки возможностей
+# Карточки возможностей (Новый дизайн)
 col1, col2, col3 = st.columns(3)
+
 with col1:
-    st.markdown("### 🏠 Tenancy")
-    st.caption("Deposits, Repairs, §548 BGB")
+    with st.container(border=True):
+        st.markdown("### 🏠 Tenancy")
+        st.markdown(
+            """
+            - Deposit Recovery
+            - Rent Reduction
+            - Repairs & Mängel
+            """
+        )
+        st.caption("Focus: § 548, § 536 BGB")
+
 with col2:
-    st.markdown("### 📄 Contracts")
-    st.caption("Gym, Phone, §309 BGB")
+    with st.container(border=True):
+        st.markdown("### 📄 Contracts")
+        st.markdown(
+            """
+            - Cancel Subscriptions
+            - Check 'Red Flags'
+            - Consumer Rights
+            """
+        )
+        st.caption("Focus: § 309, § 314 BGB")
+
 with col3:
-    st.markdown("### 💼 Freelance")
-    st.caption("Invoices, Fees, §288 BGB")
+    with st.container(border=True):
+        st.markdown("### 💼 Freelance")
+        st.markdown(
+            """
+            - Claim Unpaid Invoices
+            - Calculate Late Fees
+            - B2B Payment Terms
+            """
+        )
+        st.caption("Focus: § 286, § 288 BGB")
 
 st.markdown("---")
 
