@@ -18,19 +18,18 @@ st.markdown(f"""
 <style>
     .main-header {{font-size: 2.5rem; color: #4B9CD3;}}
     
-    /* --- CSS ДЛЯ ЛОГОТИПА --- */
+    /* CSS ДЛЯ КРУГЛОЙ ИКОНКИ */
     [data-testid="stSidebar"] [data-testid="stImage"] > img {{
         border-radius: 50%;        /* Делает идеальный круг */
         border: 3px solid #4B9CD3; /* Синяя рамка (чуть тоньше) */
         width: 100px;              /* Уменьшенный размер */
-        height: 100px;             /* Высота равна ширине для круга */
-        object-fit: cover;         /* Картинка заполняет круг, не искажаясь */
+        height: 100px;             /* Высота равна ширине */
+        object-fit: cover;         /* Картинка заполняет круг красиво */
         display: block;
         margin-left: auto;
         margin-right: auto;
-        margin-bottom: 15px;       /* Отступ снизу */
+        margin-bottom: 20px;
     }}
-    /* ------------------------ */
 </style>
 """, unsafe_allow_html=True)
 
@@ -151,7 +150,7 @@ except:
 
 # --- 6. САЙДБАР (БОКОВОЕ МЕНЮ) ---
 with st.sidebar:
-    # 1. ЛОГОТИП
+    # 1. ЛОГОТИП (Теперь круглый и меньше)
     try:
         st.image(LOGO_URL)
     except:
