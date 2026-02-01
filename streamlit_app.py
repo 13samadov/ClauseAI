@@ -18,18 +18,19 @@ st.markdown(f"""
 <style>
     .main-header {{font-size: 2.5rem; color: #4B9CD3;}}
     
-    /* CSS для того, чтобы сделать логотип круглым и красивым */
+    /* --- CSS ДЛЯ ЛОГОТИПА --- */
     [data-testid="stSidebar"] [data-testid="stImage"] > img {{
-        border-radius: 50%;
-        border: 4px solid #4B9CD3;
-        width: 130px;
-        height: 130px;
-        object-fit: cover;
+        border-radius: 50%;        /* Делает идеальный круг */
+        border: 3px solid #4B9CD3; /* Синяя рамка (чуть тоньше) */
+        width: 100px;              /* Уменьшенный размер */
+        height: 100px;             /* Высота равна ширине для круга */
+        object-fit: cover;         /* Картинка заполняет круг, не искажаясь */
         display: block;
         margin-left: auto;
         margin-right: auto;
-        margin-bottom: 20px;
+        margin-bottom: 15px;       /* Отступ снизу */
     }}
+    /* ------------------------ */
 </style>
 """, unsafe_allow_html=True)
 
@@ -131,7 +132,7 @@ LAW: § 288 BGB - Verzugszinsen (Default Interest)
 TEXT:
 (1) Eine Geldschuld ist während des Verzugs zu verzinsen. Der Verzugszinssatz beträgt für das Jahr fünf Prozentpunkte über dem Basiszinssatz.
 (2) Bei Rechtsgeschäften, an denen ein Verbraucher nicht beteiligt ist (B2B), beträgt der Zinssatz für Entgeltforderungen neun Prozentpunkte über dem Basiszinssatz.
-(5) Der Gläubiger einer Entgeltforderung hat bei Verzug des Schuldners (B2B) außerdem einen Anspruch на Zahlung einer Pauschale in Höhe von 40 Euro.
+(5) Der Gläubiger einer Entgeltforderung hat bei Verzug des Schuldners (B2B) außerdem einen Anspruch auf Zahlung einer Pauschale in Höhe von 40 Euro.
 
 === CATEGORY: COMPLIANCE & LIMITATIONS ===
 Use this to define the bot's boundaries.
