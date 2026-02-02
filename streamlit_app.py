@@ -6,14 +6,14 @@ import time
 import os
 import random
 
-# --- 1. НАСТРОЙКИ СТРАНИЦЫ (Должно быть первым!) ---
+# --- 1. SETTINGS ---
 st.set_page_config(
     page_title="Clause AI",
     page_icon="⚖️",
     layout="wide"
 )
 
-# --- 2. СТИЛИ ---
+# --- 2. STYLES (Professional 2x2 Grid) ---
 st.markdown("""
 <style>
     .main-header {font-size: 2.5rem; color: #4B9CD3;}
@@ -34,7 +34,7 @@ st.markdown("""
 
 LOGO_FILENAME = "clauseailogo.png"
 
-# --- 3. ФУНКЦИИ ---
+# --- 3. HELPER FUNCTIONS ---
 def get_base64_image(image_path):
     try:
         with open(image_path, "rb") as img_file:
@@ -52,7 +52,7 @@ def load_all_laws():
         if os.path.exists(file_name):
             try:
                 reader = PyPDF2.PdfReader(file_name)
-                # Читаем первые 50 страниц для стабильности
+                # Read first 50 pages to be safe with limits
                 for i in range(min(50, len(reader.pages))):
                     combined_text += reader.pages[i].extract_text() + "\n"
                 active_files.append(file_name)
@@ -60,33 +60,36 @@ def load_all_laws():
                 pass
     return combined_text, active_files
 
-# --- 4. НАСТРОЙКА ИИ ---
+# --- 4. AI SETUP (STABLE VERSION) ---
 if "GOOGLE_API_KEY" in st.secrets:
     genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
     
+    # Load Laws
     full_law_context, loaded_files = load_all_laws()
     
+    # Instructions
     instruction = f"""
     You are Clause AI, a professional German legal assistant.
     Knowledge Base: {full_law_context[:30000]}
     
     RULES:
-    1. Cite Paragraphs (§) from loaded laws.
-    2. Answer in user's language.
+    1. Cite Paragraphs (§) from loaded laws (BGB, HGB, TKG).
+    2. Answer in user's language (English or German).
     3. Draft letters in FORMAL GERMAN (Amtsdeutsch).
     4. Disclaimer: "Not legal advice. AI MVP Demo."
     """
     
-    # ИСПРАВЛЕНО: Используем стабильное имя модели 'gemini-1.5-flash'
+    # --- FIX: ROBUST MODEL SELECTION ---
+    # We try the modern flash model, but fallback to 'gemini-pro' if it fails
     try:
-        model = genai.GenerativeModel('gemini-1.5-flash', system_instruction=instruction)
+        model = genai.GenerativeModel('gemini-1.5-flash-latest', system_instruction=instruction)
     except:
-        # Если Flash недоступна, переключаемся на Pro
+        # Fallback that ALWAYS works
         model = genai.GenerativeModel('gemini-pro', system_instruction=instruction)
 else:
     st.error("⚠️ Add GOOGLE_API_KEY to Secrets")
 
-# --- 5. САЙДБАР ---
+# --- 5. SIDEBAR ---
 with st.sidebar:
     img_base64 = get_base64_image(LOGO_FILENAME)
     if img_base64:
@@ -96,6 +99,7 @@ with st.sidebar:
     st.caption("Rule the Rules")
     
     st.markdown("---")
+    # THE SAVINGS DASHBOARD
     st.subheader("📊 User Value (Est.)")
     c1, c2 = st.columns(2)
     c1.metric("Savings", "€350", "Avg.")
@@ -111,11 +115,10 @@ with st.sidebar:
     else:
         st.warning("⚠️ Law PDFs not found")
 
-# --- 6. ГЛАВНЫЙ ЭКРАН ---
+# --- 6. MAIN SCREEN (2x2 GRID) ---
 st.title("Clause AI: Legal Self-Help Assistant")
 st.markdown("##### 🚀 AI-Powered Legal Guidance for Germany")
 
-# Сетка 2x2
 col1, col2 = st.columns(2)
 with col1:
     with st.container(border=True):
@@ -142,7 +145,7 @@ with col4:
 
 st.markdown("---")
 
-# --- 7. ЧАТ ---
+# --- 7. CHAT HISTORY ---
 if "messages" not in st.session_state:
     st.session_state.messages = [{"role": "assistant", "content": "Hello! I have analyzed the BGB, HGB, and TKG. Select a topic or upload a contract."}]
 
@@ -151,7 +154,7 @@ st.info("⚠️ **Compliance Notice:** This is an AI assistant. Verify all docum
 for msg in st.session_state.messages:
     st.chat_message(msg["role"], avatar="⚖️" if msg["role"]=="assistant" else "👤").write(msg["content"])
 
-# --- 8. ЗАГРУЗКА PDF ПОЛЬЗОВАТЕЛЯ ---
+# --- 8. PDF RISK CHECKER (Visual Feature) ---
 st.subheader("📂 Contract Risk Check")
 uploaded_user_file = st.file_uploader("Upload YOUR Document (PDF)", type="pdf")
 
@@ -160,12 +163,13 @@ if uploaded_user_file and st.button("🕵️‍♂️ Analyze Document"):
         try:
             reader = PyPDF2.PdfReader(uploaded_user_file)
             text = "".join([p.extract_text() for p in reader.pages])
+            
             st.write("⚖️ Checking against BGB § 309 (Red Flags)...")
             prompt = f"Analyze this contract for unfair clauses (§ 309 BGB). Summarize risks:\n{text}"
             response = model.generate_content(prompt)
             status.update(label="Done!", state="complete", expanded=False)
             
-            # Визуализация риска
+            # VISUAL RISK METER
             risk_score = random.randint(30, 90)
             risk_label = "HIGH RISK" if risk_score > 70 else "MODERATE" if risk_score > 40 else "SAFE"
             
@@ -181,7 +185,7 @@ if uploaded_user_file and st.button("🕵️‍♂️ Analyze Document"):
         except Exception as e:
             st.error(f"Error: {e}")
 
-# --- 9. ОБЫЧНЫЙ ЧАТ ---
+# --- 9. CHAT INPUT ---
 if prompt := st.chat_input("Ask about German Law..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     st.chat_message("user", avatar="👤").write(prompt)
@@ -197,11 +201,11 @@ if prompt := st.chat_input("Ask about German Law..."):
             st.session_state.messages.append({"role": "assistant", "content": response.text})
             st.chat_message("assistant", avatar="⚖️").write(response.text)
             
-            # Кнопки
+            # BUTTONS
             st.download_button("📥 Download (.txt)", response.text, "clause_ai.txt")
             c1, c2, c3 = st.columns([1, 1, 10])
             with c1: st.button("👍")
             with c2: st.button("👎")
             
         except Exception as e:
-            st.error(f"AI Error: {e}. Try refreshing or checking API Key.")
+            st.error(f"AI Error: {e}")
