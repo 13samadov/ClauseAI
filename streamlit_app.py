@@ -6,7 +6,7 @@ import time
 import os
 import random
 
-# --- 1. НАСТРОЙКИ СТРАНИЦЫ ---
+# --- 1. НАСТРОЙКИ СТРАНИЦЫ (Должно быть первым!) ---
 st.set_page_config(
     page_title="Clause AI",
     page_icon="⚖️",
@@ -77,11 +77,11 @@ if "GOOGLE_API_KEY" in st.secrets:
     4. Disclaimer: "Not legal advice. AI MVP Demo."
     """
     
-    # ИСПРАВЛЕНИЕ: Используем более точное имя модели
-    # Если flash не работает, скрипт попробует pro
+    # ИСПРАВЛЕНО: Используем стабильное имя модели 'gemini-1.5-flash'
     try:
-        model = genai.GenerativeModel('gemini-1.5-flash-latest', system_instruction=instruction)
+        model = genai.GenerativeModel('gemini-1.5-flash', system_instruction=instruction)
     except:
+        # Если Flash недоступна, переключаемся на Pro
         model = genai.GenerativeModel('gemini-pro', system_instruction=instruction)
 else:
     st.error("⚠️ Add GOOGLE_API_KEY to Secrets")
