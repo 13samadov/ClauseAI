@@ -14,7 +14,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- 2. СТИЛИЗАЦИЯ ---
+# --- 2. СТИЛИ ---
 st.markdown("""
 <style>
     .main-header {font-size: 2.5rem; color: #4B9CD3;}
@@ -46,7 +46,7 @@ def get_base64_image(image_path):
     except FileNotFoundError:
         return None
 
-# ФУНКЦИЯ ЧТЕНИЯ ТВОИХ ЗАКОНОВ
+# ФУНКЦИЯ ЧТЕНИЯ ТВОИХ ЗАКОНОВ (RAG)
 @st.cache_resource
 def load_legal_library():
     library_text = ""
@@ -57,7 +57,7 @@ def load_legal_library():
         if os.path.exists(filename):
             try:
                 reader = PyPDF2.PdfReader(filename)
-                # Читаем первые 50 страниц (оптимизация)
+                # Читаем первые 50 страниц (для стабильности)
                 for i in range(min(50, len(reader.pages))):
                     library_text += reader.pages[i].extract_text() + "\n"
                 loaded_names.append(filename)
@@ -65,7 +65,7 @@ def load_legal_library():
                 pass
     return library_text, loaded_names
 
-# --- 4. ПОДКЛЮЧЕНИЕ КЛЮЧА И ЗАГРУЗКА ДАННЫХ ---
+# --- 4. НАСТРОЙКА ИИ ---
 if "GOOGLE_API_KEY" in st.secrets:
     genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
 else:
@@ -104,9 +104,9 @@ with st.sidebar:
     if img_base64:
         st.markdown(f'<div style="text-align:center; margin-bottom:10px"><img src="data:image/png;base64,{img_base64}" width="100" style="border-radius:50%; border:3px solid #4B9CD3"></div>', unsafe_allow_html=True)
     
-    # ИСПОЛЬЗУЕМ НОВЫЙ ЗАГОЛОВОК И ЗДЕСЬ
-    st.title("Clause AI") 
-    st.caption("Personal Legal Navigator")
+    # ВЕРНУЛИ СТАРЫЙ БРЕНДИНГ ЗДЕСЬ
+    st.title("⚖️ Clause AI")
+    st.caption("Rule the Rules")
     
     st.markdown("---")
     # ДАШБОРД ЭКОНОМИИ
@@ -117,7 +117,6 @@ with st.sidebar:
     st.markdown("---")
     
     if st.button("🔄 Start New Chat", use_container_width=True):
-        # Сброс с новым приветствием
         st.session_state.messages = [{"role": "assistant", "content": "I’ve read the fine print so you don’t have to. Describe your situation — I'm ready to help."}]
         st.rerun()
     
@@ -144,7 +143,7 @@ with st.sidebar:
         st.warning("⚠️ PDFs not found")
 
 # --- 6. ГЛАВНЫЙ ЭКРАН ---
-# НОВЫЕ ТЕКСТЫ ЗДЕСЬ
+# НОВЫЕ ТЕКСТЫ ЗДЕСЬ (Оставили как ты просил)
 st.title("Clause AI: Personal Legal Navigator")
 st.markdown("##### Turn German Bureaucracy into Simple Actions")
 
@@ -177,7 +176,6 @@ with col4:
 st.markdown("---")
 
 # --- 7. ЧАТ ---
-# НОВОЕ ПРИВЕТСТВИЕ ЗДЕСЬ
 if "messages" not in st.session_state:
     st.session_state.messages = [{"role": "assistant", "content": "I’ve read the fine print so you don’t have to. Describe your situation — I'm ready to help."}]
 
