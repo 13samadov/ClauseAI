@@ -46,7 +46,7 @@ def get_base64_image(image_path):
     except FileNotFoundError:
         return None
 
-# ФУНКЦИЯ ЧТЕНИЯ ТВОИХ ЗАКОНОВ (ЭТО ТО, ЧТО МЫ ДОБАВЛЯЕМ)
+# ФУНКЦИЯ ЧТЕНИЯ ТВОИХ ЗАКОНОВ
 @st.cache_resource
 def load_legal_library():
     library_text = ""
@@ -57,7 +57,7 @@ def load_legal_library():
         if os.path.exists(filename):
             try:
                 reader = PyPDF2.PdfReader(filename)
-                # Читаем первые 50 страниц (чтобы не перегрузить старую модель)
+                # Читаем первые 50 страниц (оптимизация)
                 for i in range(min(50, len(reader.pages))):
                     library_text += reader.pages[i].extract_text() + "\n"
                 loaded_names.append(filename)
@@ -91,11 +91,10 @@ INSTRUCTIONS:
 {raw_legal_text[:40000]} 
 """
 
-# 3. ЗАПУСК МОДЕЛИ (Используем ТВОЕ рабочее название)
+# 3. ЗАПУСК МОДЕЛИ (Твоя рабочая версия)
 try:
     model = genai.GenerativeModel('gemini-flash-latest', system_instruction=LEGAL_CONTEXT)
 except:
-    # Запасной вариант, если и это не сработает
     model = genai.GenerativeModel('gemini-pro', system_instruction=LEGAL_CONTEXT)
 
 
@@ -105,11 +104,12 @@ with st.sidebar:
     if img_base64:
         st.markdown(f'<div style="text-align:center; margin-bottom:10px"><img src="data:image/png;base64,{img_base64}" width="100" style="border-radius:50%; border:3px solid #4B9CD3"></div>', unsafe_allow_html=True)
     
-    st.title("⚖️ Clause AI")
-    st.caption("Rule the Rules")
+    # ИСПОЛЬЗУЕМ НОВЫЙ ЗАГОЛОВОК И ЗДЕСЬ
+    st.title("Clause AI") 
+    st.caption("Personal Legal Navigator")
     
     st.markdown("---")
-    # ДАШБОРД ЭКОНОМИИ (Твоя фича)
+    # ДАШБОРД ЭКОНОМИИ
     st.subheader("📊 User Value (Est.)")
     c1, c2 = st.columns(2)
     c1.metric("Savings", "€350", "Avg.")
@@ -117,7 +117,8 @@ with st.sidebar:
     st.markdown("---")
     
     if st.button("🔄 Start New Chat", use_container_width=True):
-        st.session_state.messages = [{"role": "assistant", "content": "Hello! I have analyzed the BGB, HGB, and TKG. How can I help?"}]
+        # Сброс с новым приветствием
+        st.session_state.messages = [{"role": "assistant", "content": "I’ve read the fine print so you don’t have to. Describe your situation — I'm ready to help."}]
         st.rerun()
     
     # Настройки
@@ -125,7 +126,7 @@ with st.sidebar:
         st.radio("Privacy Mode:", ["Ephemeral", "Persistent"], index=0)
         st.selectbox("Language:", ["English", "Deutsch"])
 
-    # Загрузка PDF пользователя
+    # Загрузка PDF
     st.subheader("📂 Contract Check")
     uploaded_file = st.file_uploader("Check YOUR Contract", type="pdf", label_visibility="collapsed")
     
@@ -138,13 +139,14 @@ with st.sidebar:
     st.markdown("---")
     
     if loaded_files_list:
-        st.caption(f"📚 Loaded: {', '.join(loaded_files_list)}")
+        st.caption(f"📚 Knowledge Base Active")
     else:
         st.warning("⚠️ PDFs not found")
 
-# --- 6. ГЛАВНЫЙ ЭКРАН (СЕТКА 2x2) ---
-st.title("Clause AI: Legal Self-Help Assistant")
-st.markdown("##### 🚀 AI-Powered Legal Guidance for Germany")
+# --- 6. ГЛАВНЫЙ ЭКРАН ---
+# НОВЫЕ ТЕКСТЫ ЗДЕСЬ
+st.title("Clause AI: Personal Legal Navigator")
+st.markdown("##### Turn German Bureaucracy into Simple Actions")
 
 # РЯД 1
 col1, col2 = st.columns(2)
@@ -175,8 +177,9 @@ with col4:
 st.markdown("---")
 
 # --- 7. ЧАТ ---
+# НОВОЕ ПРИВЕТСТВИЕ ЗДЕСЬ
 if "messages" not in st.session_state:
-    st.session_state.messages = [{"role": "assistant", "content": "Hello! I have analyzed the BGB, HGB, and TKG. How can I help?"}]
+    st.session_state.messages = [{"role": "assistant", "content": "I’ve read the fine print so you don’t have to. Describe your situation — I'm ready to help."}]
 
 st.info("⚠️ **Compliance Notice:** AI assistant. Verify with a lawyer.", icon="🛡️")
 
