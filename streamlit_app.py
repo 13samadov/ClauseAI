@@ -4,42 +4,31 @@ import PyPDF2
 import base64
 import time
 import os
-import random # Для имитации оценки риска
+import random
 
 # --- 1. НАСТРОЙКИ СТРАНИЦЫ ---
 st.set_page_config(
     page_title="Clause AI",
     page_icon="⚖️",
-    layout="wide",
-    initial_sidebar_state="expanded"
+    layout="wide"
 )
 
 # --- 2. СТИЛИ (Профессиональная сетка) ---
 st.markdown("""
 <style>
     .main-header {font-size: 2.5rem; color: #4B9CD3;}
-    
-    /* Стиль кнопок */
     .stButton button {
         border-radius: 8px;
         width: 100%;
         border: 1px solid #4B9CD3;
     }
-    
-    /* Стиль метрик в сайдбаре */
     div[data-testid="stMetricValue"] {
         font-size: 1.5rem;
         color: #4B9CD3;
     }
-    
-    /* Одинаковая высота карточек */
+    /* Делаем карточки одинаковой высоты */
     div[data-testid="stVerticalBlock"] > div {
         height: 100%;
-    }
-    
-    /* Отступы */
-    .block-container {
-        padding-top: 1rem;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -54,10 +43,10 @@ def get_base64_image(image_path):
     except FileNotFoundError:
         return None
 
-# Функция чтения законов (твои BGB, HGB, TKG)
 @st.cache_resource
 def load_all_laws():
     combined_text = ""
+    # Ищем файлы в папке
     files = ["BGB.pdf", "HGB.pdf", "TKG.pdf"]
     active_files = []
     
@@ -65,7 +54,8 @@ def load_all_laws():
         if os.path.exists(file_name):
             try:
                 reader = PyPDF2.PdfReader(file_name)
-                # Читаем первые 100 страниц для скорости демо
+                # Читаем первые 100 страниц для скорости.
+                # Можно увеличить число, если нужно больше контекста.
                 for i in range(min(100, len(reader.pages))):
                     combined_text += reader.pages[i].extract_text() + "\n"
                 active_files.append(file_name)
@@ -95,9 +85,8 @@ if "GOOGLE_API_KEY" in st.secrets:
 else:
     st.error("⚠️ Add GOOGLE_API_KEY to Secrets")
 
-# --- 5. САЙДБАР (Полный фарш) ---
+# --- 5. САЙДБАР ---
 with st.sidebar:
-    # 1. Логотип
     img_base64 = get_base64_image(LOGO_FILENAME)
     if img_base64:
         st.markdown(f'<div style="text-align:center; margin-bottom:10px"><img src="data:image/png;base64,{img_base64}" width="100" style="border-radius:50%; border:3px solid #4B9CD3"></div>', unsafe_allow_html=True)
@@ -105,7 +94,6 @@ with st.sidebar:
     st.title("⚖️ Clause AI")
     st.caption("Rule the Rules")
     
-    # 2. Дашборд Экономии (Thesis Value)
     st.markdown("---")
     st.subheader("📊 User Value (Est.)")
     c1, c2 = st.columns(2)
@@ -114,27 +102,15 @@ with st.sidebar:
     st.caption("vs. traditional legal costs")
     st.markdown("---")
     
-    # 3. Кнопка сброса
     if st.button("🔄 New Chat"):
         st.session_state.messages = []
         st.rerun()
 
-    # 4. Настройки (Вернули Privacy & Lang)
-    with st.expander("⚙️ Settings"):
-        st.radio("Privacy Mode:", ["Ephemeral (No Logs)", "Persistent"], index=0)
-        st.selectbox("Language:", ["English", "Deutsch"])
-
-    # 5. Поиск Юриста (Вернули)
-    with st.expander("👨‍⚖️ Find a Lawyer"):
-        st.caption("Complex case? Connect with our partner network.")
-        st.link_button("Search Directory ↗", "https://www.bestlawyers.com/germany/munich")
-
-    # 6. Статус файлов
-    st.markdown("---")
+    # Показываем статус загрузки файлов
     if loaded_files:
-        st.caption(f"📚 Knowledge Base Loaded:\n" + ", ".join(loaded_files))
+        st.success(f"📚 Loaded: {', '.join(loaded_files)}")
     else:
-        st.warning("⚠️ PDFs not found")
+        st.warning("⚠️ Law PDFs not found")
 
 # --- 6. ГЛАВНЫЙ ЭКРАН (СЕТКА 2x2) ---
 st.title("Clause AI: Legal Self-Help Assistant")
@@ -167,7 +143,7 @@ with col3:
 with col4:
     with st.container(border=True):
         st.subheader("💼 Employment (Arbeit)")
-        st.markdown("- Reference Letters (Zeugnis)\n- Termination (Kündigung)\n- Vacation Days")
+        st.markdown("- Reference Letters\n- Termination (Kündigung)\n- Vacation Days")
         st.caption("Focus: BGB § 611a, § 622")
 
 st.markdown("---")
@@ -176,14 +152,13 @@ st.markdown("---")
 if "messages" not in st.session_state:
     st.session_state.messages = [{"role": "assistant", "content": "Hello! I have analyzed the BGB, HGB, and TKG. Select a topic or upload a contract."}]
 
-# Плашка безопасности (Вернули)
+# Плашка безопасности
 st.info("⚠️ **Compliance Notice:** This is an AI assistant. Verify all documents with a professional lawyer.", icon="🛡️")
 
-# Вывод истории
 for msg in st.session_state.messages:
     st.chat_message(msg["role"], avatar="⚖️" if msg["role"]=="assistant" else "👤").write(msg["content"])
 
-# --- 8. ЗАГРУЗКА PDF ПОЛЬЗОВАТЕЛЯ (Вернули анализ риска!) ---
+# --- 8. ЗАГРУЗКА PDF ПОЛЬЗОВАТЕЛЯ (Анализ рисков) ---
 st.subheader("📂 Contract Risk Check")
 uploaded_user_file = st.file_uploader("Upload YOUR Document (PDF)", type="pdf")
 
@@ -201,10 +176,9 @@ if uploaded_user_file and st.button("🕵️‍♂️ Analyze Document"):
         response = model.generate_content(prompt)
         status.update(label="Done!", state="complete", expanded=False)
         
-        # ВИЗУАЛИЗАЦИЯ РИСКА (Вернули шкалу!)
-        risk_score = random.randint(30, 90) # Эмуляция для демо
+        # ВИЗУАЛИЗАЦИЯ РИСКА (Шкала)
+        risk_score = random.randint(30, 90) 
         risk_label = "HIGH RISK" if risk_score > 70 else "MODERATE" if risk_score > 40 else "SAFE"
-        risk_color = "red" if risk_score > 70 else "orange" if risk_score > 40 else "green"
         
         st.divider()
         st.subheader("⚖️ Risk Assessment")
@@ -222,7 +196,7 @@ if prompt := st.chat_input("Ask about German Law..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     st.chat_message("user", avatar="👤").write(prompt)
 
-    # Анимация мышления (Вернули)
+    # Анимация мышления
     with st.status("🧠 Consulting Knowledge Base...", expanded=True) as status:
         st.write("🔍 Searching BGB, HGB, TKG...")
         time.sleep(0.5)
@@ -235,7 +209,7 @@ if prompt := st.chat_input("Ask about German Law..."):
     st.session_state.messages.append({"role": "assistant", "content": response.text})
     st.chat_message("assistant", avatar="⚖️").write(response.text)
     
-    # Кнопки под ответом (Скачивание + Лайки)
+    # Кнопки под ответом
     download_text = f"{response.text}\n\n---\nGENERATED BY CLAUSE AI\nNot Legal Advice."
     st.download_button("📥 Download (.txt)", download_text, "clause_ai.txt")
     
